@@ -1,3 +1,48 @@
+server:
+  port: 8080
 spring:
   application:
     name: medical-be
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/medical
+    username: postgres
+    password: 123456
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+  messages:
+    basename: lang/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false   # optional: tránh fallback locale hệ thống nếu muốn
+    use-code-as-default-message: true  # optional nhưng rất hữu ích khi dev: nếu không tìm thấy key → trả về chính key thay vì exception
+  
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: hoa25102020@gmail.com     # email của bạn
+    password: cfpkrmtifwivsuad      # App Password vừa tạo
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+app:
+  key: EsMifsghUlQSAqmXKvh+UuokvnRdALmqvpf2WLT+PxI=
+  debug: true
+
+language:
+  default-lang: vi
+  supported: vi,en
+
