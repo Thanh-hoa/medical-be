@@ -38,9 +38,15 @@ spring:
           starttls:
             enable: true
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
 app:
   key: EsMifsghUlQSAqmXKvh+UuokvnRdALmqvpf2WLT+PxI=
   debug: true
+  upload-dir: uploads/photos
 
 language:
   default-lang: vi

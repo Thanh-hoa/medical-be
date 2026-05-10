@@ -6,13 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.example.medical_be.constant.RoleConstant;
 import com.example.medical_be.entity.Account;
 import com.example.medical_be.entity.RfAccountRole;
 import com.example.medical_be.entity.Role;
 import com.example.medical_be.repository.AccountRepository;
 import com.example.medical_be.repository.RfAccounrRoleRepository;
 import com.example.medical_be.repository.RoleRepository;
+import com.example.medical_be.support.RoleConstant;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

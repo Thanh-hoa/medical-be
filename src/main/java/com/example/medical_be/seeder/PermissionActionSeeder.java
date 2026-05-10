@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.example.medical_be.constant.PermissionConstant;
 import com.example.medical_be.entity.PermissionAction;
 import com.example.medical_be.repository.PermissionActionRepository;
+import com.example.medical_be.support.PermissionConstant;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

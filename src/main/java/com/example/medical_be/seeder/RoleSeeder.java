@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.medical_be.constant.RoleConstant;
 import com.example.medical_be.entity.Role;
 import com.example.medical_be.repository.RoleRepository;
+import com.example.medical_be.support.RoleConstant;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
