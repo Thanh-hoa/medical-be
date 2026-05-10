@@ -47,8 +47,12 @@ app:
   key: EsMifsghUlQSAqmXKvh+UuokvnRdALmqvpf2WLT+PxI=
   debug: true
   upload-dir: uploads/photos
+  server:
+    url: http://localhost:8080
+    description: Development Server
 
-language:
-  default-lang: vi
-  supported: vi,en
-
+springdoc:
+  swagger-ui:
+    path: /documents/swagger-ui
+  api-docs:
+    path: /documents/api-docs

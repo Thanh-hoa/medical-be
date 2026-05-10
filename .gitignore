@@ -34,3 +34,4 @@ build/
 
 # Ignore auth flow doc
 docs/9_AUTH_FLOW.md
+uploads/photos/

@@ -36,14 +36,14 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtFilter;
     private final ObjectMapper objectMapper;
     private final String[] PUBLIC_POST_ENDPOINT = {
-            "/api/v1/auth/account/register",
+            "/api/v1/account/register",
             "/api/v1/auth/login",
             "/api/v1/auth/logout",
             "/api/v1/auth/refresh-token"
     };
 
     private final String[] PUBLIC_GET_ENDPOINT = {
-            "/api/v1/auth/account/validate-token",
+            "/api/v1/account/validate-token",
             "/uploads/**"
     };
 
@@ -55,7 +55,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINT).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_ENDPOINT).permitAll()
+                        .requestMatchers( "/documents/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/favicon.ico",
+                                "/favicon.svg",
+                                "/swagger-home.html",
+                                "/").permitAll()
                         .anyRequest().authenticated())
+                        
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> {
                     ex.authenticationEntryPoint(this::handleAuthenticationError);
