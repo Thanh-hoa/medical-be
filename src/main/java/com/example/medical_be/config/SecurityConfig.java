@@ -43,7 +43,8 @@ public class SecurityConfig {
     };
 
     private final String[] PUBLIC_GET_ENDPOINT = {
-            "/api/v1/auth/account/validate-token"
+            "/api/v1/auth/account/validate-token",
+            "/uploads/**"
     };
 
     @Bean
