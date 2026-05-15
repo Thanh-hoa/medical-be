@@ -50,6 +50,6 @@ public class RfAccountRole {
     LocalDateTime createdAt ;
 
     @Column(name="updated_at")
-    LocalDateTime upodatedAt;
+    LocalDateTime updatedAt;
     
 }

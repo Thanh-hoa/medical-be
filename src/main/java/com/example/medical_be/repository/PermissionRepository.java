@@ -6,5 +6,5 @@ import com.example.medical_be.entity.Permission;
 
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission , Long> {
-    
+    java.util.Optional<Permission> findBySlug(String slug);
 }

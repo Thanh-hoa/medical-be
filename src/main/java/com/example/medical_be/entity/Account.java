@@ -33,7 +33,7 @@ public class Account {
      @Column(name="name" )
      String name;
 
-     @Column(name="bithday")
+     @Column(name="birthday")
      LocalDate birthday;
 
      @Column(name="phone_number" , length = 12)
@@ -58,7 +58,7 @@ public class Account {
      @Column(name="email_verify_at")
      LocalDateTime emailVerifyAt;
 
-     @Column(name="creted_by" )
+     @Column(name="created_by" )
      Long createdBy;
      
      @Column(name="gender")
