@@ -38,16 +38,16 @@ public class Role {
     String name;
     String code;
 
-    @Column(name="is_acctive")
-    Boolean isAcctive;
+    @Column(name="is_active")
+    Boolean isActive;
 
-    @Column(name="is_supper_admin")
-    Boolean isSupperAdmin;
+    @Column(name="is_super_admin")
+    Boolean isSuperAdmin;
 
     @Column(name="created_at")
     LocalDateTime createdAt;
 
-    @Column(name="update_at")
+    @Column(name="updated_at")
     LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "role" , cascade = CascadeType.ALL, fetch = FetchType.LAZY)

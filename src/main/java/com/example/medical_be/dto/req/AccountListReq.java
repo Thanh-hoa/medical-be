@@ -1,7 +1,7 @@
 package com.example.medical_be.dto.req;
 
 
-import com.example.medical_be.support.CommonConstant;
+import com.example.medical_be.support.constant.CommonConstant;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 // import io.swagger.v3.oas.annotations.Parameter;

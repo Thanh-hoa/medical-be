@@ -1,4 +1,4 @@
-package com.example.medical_be.support;
+package com.example.medical_be.support.constant;
 public class PermissionConstant {
     public static final String VIEW_PERMISSION = "view";
     public static final String CREATE_PERMISSION = "create";

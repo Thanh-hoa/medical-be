@@ -12,7 +12,7 @@ import com.example.medical_be.entity.Role;
 import com.example.medical_be.repository.AccountRepository;
 import com.example.medical_be.repository.RfAccounrRoleRepository;
 import com.example.medical_be.repository.RoleRepository;
-import com.example.medical_be.support.RoleConstant;
+import com.example.medical_be.support.constant.RoleConstant;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -75,7 +75,7 @@ public class AccountSeeder implements ISeeder {
     }
 
     private void assignRole(Account account) {
-        Optional<Role> role = roleRepository.findByCode(RoleConstant.ROLE_ADMINISTRATOR);
+        Optional<Role> role = roleRepository.findByCode(RoleConstant.ROLE_ADMIN);
         rfAccounrRoleRepository.findByAccountIdAndRoleId(account.getId(), role.orElseThrow().getId())
                 .ifPresentOrElse(
                         existingAccount -> {

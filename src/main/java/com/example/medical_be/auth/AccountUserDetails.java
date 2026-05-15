@@ -1,31 +1,43 @@
 package com.example.medical_be.auth;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.example.medical_be.entity.Account;
+
 public record AccountUserDetails(Long id, String username, String password, boolean enabled,
         Collection<? extends GrantedAuthority> authorities) implements UserDetails {
 
+    public static AccountUserDetails of(Account account, List<String> permissionStrings) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
 
-    public static AccountUserDetails of(Account account) {
-        List<GrantedAuthority> authorities = account.getRfAccountRoles() == null
-                ? List.of()
-                : account.getRfAccountRoles().stream()
-                        .filter(r -> r.getRole() != null)
-                .map(r -> r.getRole().getCode() != null ? r.getRole().getCode() : r.getRole().getName())
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isBlank())
-                .map(code -> code.startsWith("ROLE_") ? code : "ROLE_" + code)
-                .distinct()
-                .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+        // ROLE_<code> — dùng cho hasRole()
+        if (account.getRfAccountRoles() != null) {
+            account.getRfAccountRoles().stream()
+                    .filter(r -> r.getRole() != null)
+                    .map(r -> r.getRole().getCode() != null ? r.getRole().getCode() : r.getRole().getName())
+                    .filter(Objects::nonNull)
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .map(code -> code.startsWith("ROLE_") ? code : "ROLE_" + code)
+                    .distinct()
+                    .map(SimpleGrantedAuthority::new)
+                    .forEach(authorities::add);
+        }
+
+        // slug:action — dùng cho hasAuthority(), ví dụ "accounts:view"
+        if (permissionStrings != null) {
+            permissionStrings.stream()
+                    .filter(Objects::nonNull)
+                    .filter(s -> !s.isBlank())
+                    .map(SimpleGrantedAuthority::new)
+                    .forEach(authorities::add);
+        }
 
         return new AccountUserDetails(
                 account.getId(),

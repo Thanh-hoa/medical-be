@@ -78,7 +78,7 @@ public class AccountController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = JSONResponse.class),
                     examples = @ExampleObject(value = AccountApiExamples.CREATE_ACCOUNT_SUCCESS)))
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('accounts:create')")
     @PostMapping(APIRoutes.CREATE_ACCOUNT)
     public ResponseEntity<JSONResponse<?>> createAccount(@Valid @RequestBody CreateAccountReq req) {
         return ResponseEntity.ok(JSONResponse.<InfoAccountRes>builder()
@@ -137,7 +137,7 @@ public class AccountController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = JSONResponse.class),
                     examples = @ExampleObject(value = AccountApiExamples.INFO_ACCOUNT_SUCCESS)))
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('accounts:view')")
     @GetMapping(APIRoutes.DETAIL_ACCOUNT)
     public ResponseEntity<JSONResponse<?>> detailAccount(@PathVariable Long id) {
         return ResponseEntity.ok(JSONResponse.<InfoAccountRes>builder()
@@ -152,7 +152,7 @@ public class AccountController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = JSONResponse.class),
                     examples = @ExampleObject(value = AccountApiExamples.UPDATE_SUCCESS)))
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('accounts:edit')")
     @PutMapping(APIRoutes.UPDATE_ACCOUNT)
     public ResponseEntity<JSONResponse<?>> updateAccount(@Valid @RequestBody UpdateAccountReq req) {
         return ResponseEntity.ok(JSONResponse.<InfoAccountRes>builder()
@@ -167,7 +167,7 @@ public class AccountController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = JSONResponse.class),
                     examples = @ExampleObject(value = AccountApiExamples.LIST_ACCOUNT_SUCCESS)))
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('accounts:view')")
     @GetMapping(APIRoutes.LIST_ACCOUNT)
     public ResponseEntity<JSONResponse<?>> listAccount(@ModelAttribute AccountListReq filter) {
         return ResponseEntity.ok(JSONResponse.<PagedResponse<InfoAccountRes>>builder()
@@ -182,7 +182,7 @@ public class AccountController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = JSONResponse.class),
                     examples = @ExampleObject(value = AccountApiExamples.DELETE_SUCCESS)))
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('accounts:delete')")
     @DeleteMapping(APIRoutes.DELETE_ACCOUNT)
     public ResponseEntity<JSONResponse<?>> deleteAccount(@Valid @RequestBody DeleteAccountReq req) {
         accountService.deleteAccount(req);

@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.medical_be.entity.Role;
 import com.example.medical_be.repository.RoleRepository;
-import com.example.medical_be.support.RoleConstant;
+import com.example.medical_be.support.constant.RoleConstant;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +38,7 @@ public class RoleSeeder implements ISeeder {
 
     private void updateRole(Role existingRole, Role newRole) {
         existingRole.setName(newRole.getName());
-        existingRole.setIsAcctive(newRole.getIsAcctive());
+        existingRole.setIsActive(newRole.getIsActive());
         roleRepository.save(existingRole);
         log.debug("Updated role: {}", existingRole.getCode());
     }
@@ -52,16 +52,22 @@ public class RoleSeeder implements ISeeder {
     private List<Role> dataRole(){
             return Arrays.asList(
                 Role.builder()
-                .name("administrator")
-                .code(RoleConstant.ROLE_ADMINISTRATOR)
-                .isAcctive(true)
-                .isSupperAdmin(true)
+                .name("Quản Trị Viên")
+                .code(RoleConstant.ROLE_ADMIN)
+                .isActive(true)
+                .isSuperAdmin(true)
                 .build(),
                 Role.builder()
-                .name("guest")
-                .code(RoleConstant.ROLE_GUEST)
-                .isAcctive(true)
-                .isSupperAdmin(false)
+                .name("Bác Sĩ")
+                .code(RoleConstant.ROLE_DOCTOR)
+                .isActive(true)
+                .isSuperAdmin(false)
+                .build(),
+                Role.builder()
+                .name("Nhân Viên")
+                .code(RoleConstant.ROLE_EMPLOYEE)
+                .isActive(true)
+                .isSuperAdmin(false)
                 .build()
             );
     }
