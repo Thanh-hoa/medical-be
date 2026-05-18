@@ -16,12 +16,12 @@
 | `permission_action` | `PermissionAction.java` | Hành động: view/create/edit/delete/cancel/rollback |
 | `permission_role` | `PermissionRole.java` | Role ↔ Permission + Action |
 | `tbl_manager_token_account` | `ManagerTokenAccount.java` | Quản lý JWT token (hỗ trợ logout) |
-| `medical_records` | *(chưa tạo)* | Bệnh án — metadata + workflow status |
-| `ocr_regions` | *(chưa tạo)* | Raw output từ AI theo từng region (5 loại) |
-| `extracted_fields` | *(chưa tạo)* | Key-value đã parse từ region (employee verify) |
-| `lab_results` | *(chưa tạo)* | Kết quả xét nghiệm từ test_table region |
-| `audit_logs` | *(chưa tạo)* | Nhật ký thao tác toàn hệ thống |
-| `metadata` | *(chưa tạo)* | ICD-10, loại bệnh án, danh sách khoa phòng |
+| `patients` | `Patient.java` | Thông tin bệnh nhân — `bhyt` UNIQUE, key tìm kiếm |
+| `medical_records` | `MedicalRecord.java` | Bệnh án — FK `patient_id`, workflow status |
+| `ocr_regions` | `OcrRegion.java` | Raw output từ AI theo từng region (5 loại) |
+| `extracted_fields` | `ExtractedField.java` | Key-value đã parse từ region (employee verify) |
+| `lab_results` | `LabResult.java` | Kết quả xét nghiệm từ test_table region |
+| `metadata` | `Metadata.java` | ICD-10, loại bệnh án, danh sách khoa phòng |
 
 ---
 
@@ -41,19 +41,28 @@
 └──────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────┐
-│  NGHIỆP VỤ (cần tạo)                                                 │
+│  NGHIỆP VỤ                                                           │
 │                                                                      │
-│  account ──(uploaded_by)──► medical_records                          │
-│  account ──(approved_by)──► medical_records                          │
-│                                                                      │
-│  medical_records ──(1:N)──► ocr_regions   (raw AI output)           │
-│  ocr_regions     ──(1:N)──► extracted_fields  (parsed key:value)     │
-│  ocr_regions     ──(1:N)──► lab_results       (test_table rows)      │
-│                                                                      │
-│  account ──(user_id)──────► audit_logs                               │
-│  medical_records ─────────► audit_logs                               │
-│  metadata  (độc lập, ICD-10, loại bệnh án, khoa phòng)              │
+│  patients ──(bhyt: key search)                                       │
+│      │                                                               │
+│      └──(1:N via patient_id)──► medical_records                      │
+│                                      │                               │
+│  account ──(uploaded_by)────────────►│                               │
+│  account ──(approved_by)────────────►│                               │
+│                                      │                               │
+│                    ┌─────────────────┘                               │
+│                    │                                                 │
+│                    ├──(1:N)──► ocr_regions   (raw AI output)        │
+│                    │               │                                 │
+│                    │               ├──(1:N)──► extracted_fields      │
+│                    │               └──(1:N)──► lab_results           │
+│                    │                                                 │
+│  metadata  (độc lập — ICD-10, loại bệnh án, khoa phòng)             │
 └──────────────────────────────────────────────────────────────────────┘
+
+Search flow:
+  BHYT ──► patients ──► list medical_records (ORDER BY created_at DESC)
+                                  └──► click vào ──► chi tiết record
 ```
 
 ---
