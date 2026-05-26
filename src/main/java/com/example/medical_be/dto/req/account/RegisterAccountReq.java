@@ -1,4 +1,4 @@
-package com.example.medical_be.dto.req;
+package com.example.medical_be.dto.req.account;
 public record RegisterAccountReq (
         String email,
         String password,

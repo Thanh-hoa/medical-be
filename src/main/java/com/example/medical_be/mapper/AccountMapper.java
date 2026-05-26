@@ -5,7 +5,5 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
-
     InfoAccountRes toInfoAccount(Account account);
-
 }

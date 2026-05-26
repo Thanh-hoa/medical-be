@@ -1,6 +1,15 @@
 package com.example.medical_be.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.example.medical_be.dto.json.LabResultJson;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -44,15 +53,12 @@ public class MedicalRecord {
     @Column(name = "original_image_path", length = 500)
     String originalImagePath;
 
-    // FK → patients.id (tìm qua BHYT, sau đó link record vào đây)
     @Column(name = "patient_id")
     Long patientId;
 
-    // Khoa phòng — OCR extract, employee có thể chỉnh: "Nội Khoa", "Ngoại Khoa"...
     @Column(name = "department", length = 100)
     String department;
 
-    // Loại bệnh án — "Nội trú", "Ngoại trú"
     @Column(name = "record_type", length = 50)
     String recordType;
 
@@ -72,6 +78,25 @@ public class MedicalRecord {
 
     @Column(name = "approved_at")
     LocalDateTime approvedAt;
+
+
+    @Column(name = "verified_by")
+    Long verifiedBy;
+
+    @Column(name = "verified_at")
+    LocalDateTime verifiedAt;
+
+  
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "extracted_data", columnDefinition = "jsonb")
+    @Builder.Default
+    Map<String, String> extractedData = new HashMap<>();
+
+   
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "lab_data", columnDefinition = "jsonb")
+    @Builder.Default
+    List<LabResultJson> labData = new ArrayList<>();
 
     @Column(name = "created_at")
     @Builder.Default

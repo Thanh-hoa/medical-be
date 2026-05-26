@@ -35,5 +35,5 @@ build/
 # Ignore auth flow doc
 docs/9_AUTH_FLOW.md
 docs/4_PERMISSION_DESIGN.md
-# docs/IMPLEMENTATION_PLAN.md
+#docs/IMPLEMENTATION_PLAN.md
 uploads/photos/

@@ -117,38 +117,91 @@ AI response JSON
     └─► Cập nhật medical_records.status = 'Extracted'
 ```
 
-### 3B — Repositories & Services
+### 3B — Repositories & Services (✅ Hoàn thành)
 
 | # | Task | File | Ghi chú |
 |---|------|------|---------|
-| ⬜ | `MedicalRecordRepository` | `repository/` | Query theo uploaded_by (employee filter) |
-| ⬜ | `MedicalRecordService` | `service/` | CRUD + business rules: edit status check theo role |
-| ⬜ | `AuditLogService` | `service/` | Log mọi action CRUD — chỉ INSERT |
-| ⬜ | `MetadataService` | `service/` | CRUD metadata |
+| ✅ | `PatientRepository` | `repository/PatientRepository.java` | findByBhyt, search theo tên/bhyt |
+| ✅ | `MedicalRecordRepository` | `repository/MedicalRecordRepository.java` | query employee-only vs all, filter status/patientId |
+| ✅ | `OcrRegionRepository` | `repository/OcrRegionRepository.java` | findByRecordId, findByRecordIdAndRegionType |
+| ✅ | `ExtractedFieldRepository` | `repository/ExtractedFieldRepository.java` | findByRecordId, verifyAllByRecordId |
+| ✅ | `LabResultRepository` | `repository/LabResultRepository.java` | findByRecordId, findAbnormal, verifyAll |
+| ✅ | `IPatientService` + `PatientService` | `service/` | findByBhyt (+ records), search, findOrCreate, update |
+| ✅ | `IMedicalRecordService` + `MedicalRecordService` | `service/` | CRUD + submit/approve/reject + business rules theo role |
+| ✅ | i18n messages | `lang/messages*.properties` | Thêm keys cho patient + record + extracted_field |
+| ~~AuditLogService~~ | ~~Đã bỏ~~ | — | AuditLog không dùng nữa |
+| ~~MetadataService~~ | ~~Đã bỏ~~ | — | Metadata không dùng nữa |
 
-### 3C — Controllers
+### 3C — Controllers (✅ Hoàn thành)
 
 | # | Task | File | Ghi chú |
 |---|------|------|---------|
-| ⬜ | `MedicalRecordController` | `controller/` | CRUD + upload endpoint |
-| ⬜ | `ApprovalController` | `controller/` | approve / reject với status check |
-| ⬜ | `PatientController` | `controller/` | search endpoint |
-| ⬜ | `AuditLogController` | `controller/` | view-only |
-| ⬜ | `MetadataController` | `controller/` | CRUD |
-| ⬜ | `DashboardController` | `controller/` | Statistics endpoint |
-| ⬜ | `AiLogController` | `controller/` | OCR log view |
+| ✅ | `PatientController` | `controller/PatientController.java` | search BHYT, list, create, update |
+| ✅ | `MedicalRecordController` | `controller/MedicalRecordController.java` | CRUD + submit + approve/reject (gộp ApprovalController) |
+| ✅ | `APIRoutes` | `routes/APIRoutes.java` | Thêm routes patient/* và medical-record/* |
+| ✅ | `GroupAPIConstant` | `swagger/GroupAPIConstant.java` | Thêm group 04-Patient, 05-MedicalRecord |
+| ~~AuditLogController~~ | ~~Đã bỏ~~ | — | |
+| ~~MetadataController~~ | ~~Đã bỏ~~ | — | |
+| ⬜ | `DashboardController` | `controller/` | Phase 4 (sau khi có data thực) |
+| ⬜ | `AiLogController` | `controller/` | Phase 4 — AI integration |
+
+**Endpoint map:**
+
+| Method | URL | Permission | Mô tả |
+|--------|-----|-----------|-------|
+| GET | `/api/v1/patient/search?bhyt=` | `patient-search:view` | Tìm bệnh nhân + list records |
+| GET | `/api/v1/patient/list` | `patient-search:view` | Danh sách bệnh nhân (phân trang) |
+| GET | `/api/v1/patient/{id}` | `patient-search:view` | Chi tiết bệnh nhân |
+| POST | `/api/v1/patient/create` | `medical-records:create` | Tạo bệnh nhân mới |
+| PUT | `/api/v1/patient/update/{id}` | `medical-records:edit` | Cập nhật bệnh nhân |
+| POST | `/api/v1/medical-record/create` | `medical-records:create` | Tạo bệnh án |
+| GET | `/api/v1/medical-record/list` | `medical-records:view` | Danh sách bệnh án |
+| GET | `/api/v1/medical-record/{id}` | `medical-records:view` | Chi tiết bệnh án |
+| PUT | `/api/v1/medical-record/update` | `medical-records:edit` | Cập nhật bệnh án |
+| PUT | `/api/v1/medical-record/field/update` | `medical-records:edit` | Cập nhật extracted field |
+| PUT | `/api/v1/medical-record/{id}/submit` | `medical-records:edit` | Submit để bác sĩ duyệt |
+| PUT | `/api/v1/medical-record/{id}/approve` | `medical-records-approval:create` | Duyệt bệnh án |
+| PUT | `/api/v1/medical-record/reject` | `medical-records-approval:cancel` | Từ chối bệnh án |
+| DELETE | `/api/v1/medical-record/{id}` | `medical-records:delete` | Xóa bệnh án |
 
 ---
 
-## Phase 4 — AI Integration (⬜ Chưa làm)
+## Phase 4 — AI Integration (🔧 Đang làm)
 
-| # | Task | Ghi chú |
-|---|------|---------|
-| ⬜ | HTTP client gọi Python AI Service | RestTemplate hoặc WebClient |
-| ⬜ | Upload file (JPG/PNG/PDF) → gửi Python | 5MB limit đã config trong application.yaml |
-| ⬜ | Nhận kết quả OCR → lưu `extracted_fields` | confidence_score mỗi field |
-| ⬜ | Update `medical_records.status` = `Extracted` sau OCR | |
-| ⬜ | `AiLog` entity + service | Lưu log xử lý AI |
+| # | Task | File | Ghi chú |
+|---|------|------|---------|
+| ⬜ | HTTP client gọi Python AI Service | `config/AiServiceClient.java` | RestTemplate hoặc WebClient |
+| ⬜ | Upload file (JPG/PNG/PDF) → gửi Python | `controller/MedicalRecordController.java` | 5MB limit đã config trong application.yaml |
+| ✅ | Nhận kết quả OCR từ Python → lưu JSONB | `controller/MedicalRecordController.java` | POST `/api/v1/medical-record/ocr-result` |
+| ✅ | Parse extractedData + labData → lưu vào `medical_records` | `service/MedicalRecordService.java` | `processOcrResult()` — auto findOrCreate patient theo bhyt |
+| ✅ | Update `medical_records.status` = `Extracted` sau OCR | `service/MedicalRecordService.java` | Trong `processOcrResult()` |
+| ⬜ | `AiLog` entity + service | — | Lưu log xử lý AI, Phase sau |
+
+**Endpoint OCR callback:**
+```
+POST /api/v1/medical-record/ocr-result
+Permission: isAuthenticated()
+Body: { recordId, extractedData: Map<String,String>, labData: List<LabResultJson> }
+```
+
+**Flow đầy đủ:**
+```
+Employee upload file
+    ↓
+BE: create medical_record (status=Processing)
+    ↓
+Python: nhận file → OCR → gọi AI model parse text
+    ↓
+AI model: trả { extractedData, labData } (không có recordId)
+    ↓
+Python: gắn recordId → POST /api/v1/medical-record/ocr-result
+    ↓
+BE processOcrResult():
+    - lưu extractedData + labData vào JSONB
+    - auto-fill department từ extractedData
+    - findOrCreate patient theo patient_bhyt
+    - status → Extracted
+```
 
 ---
 

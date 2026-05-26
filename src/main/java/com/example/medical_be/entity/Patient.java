@@ -29,7 +29,6 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    // Số thẻ BHYT — key duy nhất để tìm kiếm bệnh nhân
     @Column(name = "bhyt", length = 30, unique = true, nullable = false)
     String bhyt;
 

@@ -1,4 +1,4 @@
-package com.example.medical_be.dto.req;
+package com.example.medical_be.dto.req.account;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

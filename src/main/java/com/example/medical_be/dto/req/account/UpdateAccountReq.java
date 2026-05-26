@@ -1,4 +1,4 @@
-package com.example.medical_be.dto.req;
+package com.example.medical_be.dto.req.account;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 

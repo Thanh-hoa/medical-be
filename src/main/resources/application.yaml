@@ -40,8 +40,12 @@ spring:
 
   servlet:
     multipart:
-      max-file-size: 5MB
-      max-request-size: 10MB
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+ocr:
+  api:
+    url: http://localhost:8000
 
 app:
   key: EsMifsghUlQSAqmXKvh+UuokvnRdALmqvpf2WLT+PxI=

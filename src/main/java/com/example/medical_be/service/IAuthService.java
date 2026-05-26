@@ -1,6 +1,6 @@
 package com.example.medical_be.service;
-import com.example.medical_be.dto.req.LoginReq;
-import com.example.medical_be.dto.req.RefreshTokenReq;
+import com.example.medical_be.dto.req.auth.LoginReq;
+import com.example.medical_be.dto.req.auth.RefreshTokenReq;
 import com.example.medical_be.dto.res.InfoLoginRes;
 import com.example.medical_be.dto.res.InfoLogoutRes;
 
