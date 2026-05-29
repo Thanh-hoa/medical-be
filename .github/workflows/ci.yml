@@ -9,10 +9,10 @@ on:
 
 jobs:
   build:
-    name: Build & Test (Java 21 + PostgreSQL)
+    name: Build & Test
     runs-on: ubuntu-latest  
 
-    # Khởi động PostgreSQL song song với job (giống docker-compose)
+  
     services:
       postgres:
         image: postgres:15
@@ -40,7 +40,9 @@ jobs:
           cache: maven 
 
       - name: Build and run tests
-        run: ./mvnw clean verify
+        run: |
+          chmod +x mvnw
+          ./mvnw clean verify
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/medical
           SPRING_DATASOURCE_USERNAME: postgres
