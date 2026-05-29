@@ -56,19 +56,10 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.CANCEL_PERMISSION);
 
         grant(admin, MedicalRecordConstant.PATIENT_SEARCH,
-                PermissionConstant.VIEW_PERMISSION);
-
-        grant(admin, AdminConstant.AUDIT_LOG,
-                PermissionConstant.VIEW_PERMISSION);
-
-        grant(admin, AdminConstant.METADATA_MANAGEMENT,
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.EDIT_PERMISSION, PermissionConstant.DELETE_PERMISSION);
 
         grant(admin, AdminConstant.DASHBOARD,
-                PermissionConstant.VIEW_PERMISSION);
-
-        grant(admin, AdminConstant.AI_LOG,
                 PermissionConstant.VIEW_PERMISSION);
     }
 
@@ -83,9 +74,6 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.CANCEL_PERMISSION);
 
-        grant(doctor, MedicalRecordConstant.PATIENT_SEARCH,
-                PermissionConstant.VIEW_PERMISSION);
-
         grant(doctor, AdminConstant.DASHBOARD,
                 PermissionConstant.VIEW_PERMISSION);
     }
@@ -97,9 +85,6 @@ public class PermissionRoleSeeder implements ISeeder {
         grant(employee, MedicalRecordConstant.MEDICAL_RECORD,
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.EDIT_PERMISSION);
-
-        grant(employee, MedicalRecordConstant.PATIENT_SEARCH,
-                PermissionConstant.VIEW_PERMISSION);
     }
 
     // ── helpers ────────────────────────────────────────────────────────
@@ -134,5 +119,4 @@ public class PermissionRoleSeeder implements ISeeder {
         return 5;
     }
 
-    // Shift PermissionActionSeeder from order=3 → stays 3, this is 5 (skip RfPermissionAction — entity không tồn tại)
 }

@@ -27,9 +27,9 @@ public class OpenApiConfig {
     private String serverDescription;
 
     @Bean
-    public OpenAPI customOpenAPI() {
+    OpenAPI customOpenAPI() {
         final String securitySchemeName = "bearerAuth";
-        
+
         return new OpenAPI()
                 .info(new Info()
                         .title("Medical BE API Documentation")
@@ -54,34 +54,60 @@ public class OpenApiConfig {
                                         .description("JWT token authentication")));
     }
 
-        @Bean
-        public GroupedOpenApi authenticationOpenApiGroup() {
-                return GroupedOpenApi.builder()
-                        .group("Authentication")
-                        .pathsToMatch(
-                                APIRoutes.API_V1 + "/" + APIRoutes.LOGIN,
-                                APIRoutes.API_V1 + "/" + APIRoutes.LOGOUT,
-                                APIRoutes.API_V1 + "/" + APIRoutes.REFRESH_TOKEN
-                        )
-                        .displayName("01. Authentication APIs")
-                        .build();
-        }
-        @Bean
-        public GroupedOpenApi userOpenApiGroup() {
-                return GroupedOpenApi.builder()
-                        .group("Account Management")
-                        .pathsToMatch(APIRoutes.API_V1 + "/account/**")
-                        .displayName("02.  Account Management APIs")
-                        .build();
-        }
-
-        @Bean
-        public GroupedOpenApi commonApi() {
+    @Bean
+    GroupedOpenApi group01Authentication() {
         return GroupedOpenApi.builder()
-                .group("common")
-                .pathsToMatch(APIRoutes.API_V1 + "/common/**")
+                .group("01-authentication")
+                .displayName("01. Authentication APIs")
+                .pathsToMatch(
+                        APIRoutes.API_V1 + "/" + APIRoutes.LOGIN,
+                        APIRoutes.API_V1 + "/" + APIRoutes.LOGOUT,
+                        APIRoutes.API_V1 + "/" + APIRoutes.REFRESH_TOKEN)
+                .build();
+    }
+
+    @Bean
+    GroupedOpenApi group02AccountManagement() {
+        return GroupedOpenApi.builder()
+                .group("02-account-management")
+                .displayName("02. Account Management APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/account/**")
+                .build();
+    }
+
+    @Bean
+    GroupedOpenApi group03Common() {
+        return GroupedOpenApi.builder()
+                .group("03-common")
                 .displayName("03. Common APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/common/**")
+                .build();
+    }
+
+    @Bean
+    GroupedOpenApi group04Patient() {
+        return GroupedOpenApi.builder()
+                .group("04-patient")
+                .displayName("04. Patient Management APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/patient/**")
+                .build();
+    }
+
+    @Bean
+    GroupedOpenApi group05MedicalRecord() {
+        return GroupedOpenApi.builder()
+                .group("05-medical-record")
+                .displayName("05. Medical Record APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/medical-record/**")
+                .build();
+    }
+
+    @Bean
+    GroupedOpenApi group06MenuPermission() {
+        return GroupedOpenApi.builder()
+                .group("06-menu-permission")
+                .displayName("06. Menu Permission APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/config/**")
                 .build();
     }
 }
-

@@ -1,4 +1,4 @@
-package com.example.medical_be.dto.req;
+package com.example.medical_be.dto.req.account;
 
 import java.util.List;
 

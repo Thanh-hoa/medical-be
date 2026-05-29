@@ -52,19 +52,19 @@ public class RoleSeeder implements ISeeder {
     private List<Role> dataRole(){
             return Arrays.asList(
                 Role.builder()
-                .name("Quản Trị Viên")
+                .name("administrator")
                 .code(RoleConstant.ROLE_ADMIN)
                 .isActive(true)
                 .isSuperAdmin(true)
                 .build(),
                 Role.builder()
-                .name("Bác Sĩ")
+                .name("doctor")
                 .code(RoleConstant.ROLE_DOCTOR)
                 .isActive(true)
                 .isSuperAdmin(false)
                 .build(),
                 Role.builder()
-                .name("Nhân Viên")
+                .name("employee")
                 .code(RoleConstant.ROLE_EMPLOYEE)
                 .isActive(true)
                 .isSuperAdmin(false)
