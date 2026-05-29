@@ -8,6 +8,7 @@ import com.example.medical_be.dto.req.account.UpdateAccountReq;
 import com.example.medical_be.dto.req.account.UpdateProfileReq;
 import com.example.medical_be.dto.res.InfoAccountRes;
 import com.example.medical_be.dto.res.PagedResponse;
+import java.util.List;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.service.IAccountService;
 import com.example.medical_be.swagger.AccountApiExamples;
@@ -114,6 +115,20 @@ public class AccountController {
                         .isError(false)
                         .message(iMessageTranslator.getMessage("account.get_profile_success"))
                         .data(accountService.getInfoProfile())
+                        .build());
+    }
+
+    @Operation(summary = "Get my permissions", description = "Lấy danh sách quyền của tài khoản đang đăng nhập (format: module:action)")
+    @ApiResponse(responseCode = "200", description = "Lấy quyền thành công",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                    schema = @Schema(implementation = JSONResponse.class)))
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping(APIRoutes.MY_PERMISSIONS)
+    public ResponseEntity<JSONResponse<?>> getMyPermissions() {
+        return ResponseEntity.ok(JSONResponse.<List<String>>builder()
+                        .isError(false)
+                        .message(iMessageTranslator.getMessage("account.get_profile_success"))
+                        .data(accountService.getMyPermissions())
                         .build());
     }
 

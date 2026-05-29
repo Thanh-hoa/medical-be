@@ -23,9 +23,11 @@ import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.routes.APIRoutes;
 import com.example.medical_be.service.IPatientService;
 import com.example.medical_be.swagger.GroupAPIConstant;
+import com.example.medical_be.swagger.PatientApiExamples;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +47,8 @@ public class PatientController {
                description = "Tìm bệnh nhân theo số thẻ BHYT, trả về thông tin bệnh nhân và danh sách bệnh án (mới nhất trước)")
     @ApiResponse(responseCode = "200", description = "Tìm thấy bệnh nhân",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = PatientApiExamples.SEARCH_BY_BHYT_SUCCESS)))
     @PreAuthorize("hasAuthority('patient-search:view')")
     @GetMapping(APIRoutes.PATIENT_SEARCH)
     public ResponseEntity<JSONResponse<?>> searchByBhyt(@RequestParam String bhyt) {
@@ -60,7 +63,8 @@ public class PatientController {
                description = "Tìm kiếm danh sách bệnh nhân theo tên hoặc BHYT, có phân trang")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = PatientApiExamples.LIST_PATIENT_SUCCESS)))
     @PreAuthorize("hasAuthority('patient-search:view')")
     @GetMapping(APIRoutes.PATIENT_LIST)
     public ResponseEntity<JSONResponse<?>> list(@ModelAttribute PatientSearchReq req) {
@@ -75,8 +79,9 @@ public class PatientController {
                description = "Tạo hồ sơ bệnh nhân mới với số thẻ BHYT duy nhất")
     @ApiResponse(responseCode = "200", description = "Tạo thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
-    @PreAuthorize("hasAuthority('medical-records:create')")
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = PatientApiExamples.CREATE_PATIENT_SUCCESS)))
+    @PreAuthorize("hasAuthority('patient-search:create')")
     @PostMapping(APIRoutes.PATIENT_CREATE)
     public ResponseEntity<JSONResponse<?>> create(@Valid @RequestBody CreatePatientReq req) {
         return ResponseEntity.ok(JSONResponse.<PatientRes>builder()
@@ -90,8 +95,9 @@ public class PatientController {
                description = "Cập nhật thông tin cá nhân của bệnh nhân")
     @ApiResponse(responseCode = "200", description = "Cập nhật thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
-    @PreAuthorize("hasAuthority('medical-records:edit')")
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = PatientApiExamples.UPDATE_PATIENT_SUCCESS)))
+    @PreAuthorize("hasAuthority('patient-search:edit')")
     @PutMapping(APIRoutes.PATIENT_UPDATE)
     public ResponseEntity<JSONResponse<?>> update(
             @Valid @RequestBody UpdatePatiientReq req) {

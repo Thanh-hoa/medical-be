@@ -69,32 +69,14 @@ public class PermissionSeeder implements ISeeder {
                         .build(),
                 Permission.builder()
                         .slug(MedicalRecordConstant.PATIENT_SEARCH)
-                        .name("Tra cứu Bệnh nhân")
+                        .name("Quản lý Bệnh nhân")
                         .sort("4")
-                        .isHidden(false)
-                        .build(),
-                Permission.builder()
-                        .slug(AdminConstant.AUDIT_LOG)
-                        .name("Nhật ký Hệ thống")
-                        .sort("5")
-                        .isHidden(false)
-                        .build(),
-                Permission.builder()
-                        .slug(AdminConstant.METADATA_MANAGEMENT)
-                        .name("Quản lý Metadata")
-                        .sort("6")
                         .isHidden(false)
                         .build(),
                 Permission.builder()
                         .slug(AdminConstant.DASHBOARD)
                         .name("Thống kê")
-                        .sort("7")
-                        .isHidden(false)
-                        .build(),
-                Permission.builder()
-                        .slug(AdminConstant.AI_LOG)
-                        .name("Log AI / OCR")
-                        .sort("8")
+                        .sort("5")
                         .isHidden(false)
                         .build()
         );

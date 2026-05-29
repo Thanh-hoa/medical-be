@@ -15,8 +15,11 @@ public class APIRoutes {
     public static final String UPDATE_ACCOUNT = "account/update";
     public static final String LIST_ACCOUNT = "account/list";
     public static final String DELETE_ACCOUNT = "account/delete";
+    public static final String MY_PERMISSIONS = "account/my-permissions";
+    public static final String CONFIG_PERMISSION_MENU = "config/permission/menu";
 
     public static final String UPLOAD_MEDIA = "common/upload/media";
+    public static final String GET_ROLES    = "common/roles";
 
     // Patient
     public static final String PATIENT_SEARCH      = "patient/search";   // GET ?bhyt=... → PatientWithRecordsRes

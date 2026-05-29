@@ -47,23 +47,21 @@
 | ✅ | Sửa `AccountSeeder` | `seeder/AccountSeeder.java` | assignRole dùng ROLE_ADMIN |
 | ✅ | Tạo `AccountConstant` | `support/AccountConstant.java` | ACCOUNT_MANAGEMENT = "accounts" |
 | ✅ | Tạo `MedicalRecordConstant` | `support/MedicalRecordConstant.java` | MEDICAL_RECORD, MEDICAL_RECORD_APPROVAL, PATIENT_SEARCH |
-| ✅ | Tạo `AdminConstant` | `support/AdminConstant.java` | AUDIT_LOG, METADATA_MANAGEMENT, DASHBOARD, AI_LOG |
-| ✅ | Tạo `PermissionSeeder` | `seeder/PermissionSeeder.java` | order=4, seed 8 permissions |
+| ✅ | Tạo `AdminConstant` | `support/AdminConstant.java` | DASHBOARD (audit-logs, metadata-management, ai-logs đã xóa) |
+| ✅ | Tạo `PermissionSeeder` | `seeder/PermissionSeeder.java` | order=4, seed 5 permissions |
 | ✅ | Tạo `PermissionRoleSeeder` | `seeder/PermissionRoleSeeder.java` | order=5, gán permission+action cho 3 role theo matrix |
 | ✅ | Thêm `findBySlug` | `repository/PermissionRepository.java` | Dùng bởi PermissionSeeder & PermissionRoleSeeder |
 | ✅ | Thêm `existsByPermissionIdAndPermissionActionIdAndRoleId` | `repository/PermissionRoleRepository.java` | Idempotent check trong PermissionRoleSeeder |
 
-**8 Permissions cần seed (PermissionSeeder):**
+**5 Permissions cần seed (PermissionSeeder):**
 ```
 accounts               | Quản lý Tài khoản     | sort=1
 medical-records        | Quản lý Bệnh án       | sort=2
 medical-records-approval| Phê duyệt Bệnh án    | sort=3
-patient-search         | Tra cứu Bệnh nhân     | sort=4
-audit-logs             | Nhật ký Hệ thống      | sort=5
-metadata-management    | Quản lý Metadata      | sort=6
-dashboard              | Thống kê              | sort=7
-ai-logs                | Log AI / OCR          | sort=8
+patient-search         | Quản lý Bệnh nhân     | sort=4
+dashboard              | Thống kê              | sort=5
 ```
+> audit-logs, metadata-management, ai-logs đã xóa khỏi dự án.
 
 ### 2B — Security Loading
 
@@ -143,7 +141,7 @@ AI response JSON
 | ~~AuditLogController~~ | ~~Đã bỏ~~ | — | |
 | ~~MetadataController~~ | ~~Đã bỏ~~ | — | |
 | ⬜ | `DashboardController` | `controller/` | Phase 4 (sau khi có data thực) |
-| ⬜ | `AiLogController` | `controller/` | Phase 4 — AI integration |
+| ~~AiLogController~~ | ~~Đã bỏ~~ | — | |
 
 **Endpoint map:**
 
@@ -152,8 +150,8 @@ AI response JSON
 | GET | `/api/v1/patient/search?bhyt=` | `patient-search:view` | Tìm bệnh nhân + list records |
 | GET | `/api/v1/patient/list` | `patient-search:view` | Danh sách bệnh nhân (phân trang) |
 | GET | `/api/v1/patient/{id}` | `patient-search:view` | Chi tiết bệnh nhân |
-| POST | `/api/v1/patient/create` | `medical-records:create` | Tạo bệnh nhân mới |
-| PUT | `/api/v1/patient/update/{id}` | `medical-records:edit` | Cập nhật bệnh nhân |
+| POST | `/api/v1/patient/create` | `patient-search:create` | Tạo bệnh nhân mới |
+| PUT | `/api/v1/patient/update/{id}` | `patient-search:edit` | Cập nhật bệnh nhân |
 | POST | `/api/v1/medical-record/create` | `medical-records:create` | Tạo bệnh án |
 | GET | `/api/v1/medical-record/list` | `medical-records:view` | Danh sách bệnh án |
 | GET | `/api/v1/medical-record/{id}` | `medical-records:view` | Chi tiết bệnh án |
@@ -175,7 +173,7 @@ AI response JSON
 | ✅ | Nhận kết quả OCR từ Python → lưu JSONB | `controller/MedicalRecordController.java` | POST `/api/v1/medical-record/ocr-result` |
 | ✅ | Parse extractedData + labData → lưu vào `medical_records` | `service/MedicalRecordService.java` | `processOcrResult()` — auto findOrCreate patient theo bhyt |
 | ✅ | Update `medical_records.status` = `Extracted` sau OCR | `service/MedicalRecordService.java` | Trong `processOcrResult()` |
-| ⬜ | `AiLog` entity + service | — | Lưu log xử lý AI, Phase sau |
+| ~~AiLog~~ | ~~entity + service~~ | ~~—~~ | ~~Đã bỏ~~ |
 
 **Endpoint OCR callback:**
 ```
@@ -221,9 +219,8 @@ BE processOcrResult():
 order=1  RoleSeeder              → 3 roles: admin, doctor, employee
 order=2  AccountSeeder           → 1 admin default
 order=3  PermissionActionSeeder  → 6 actions (✅ đã có)
-order=4  PermissionSeeder        → 8 permissions (⬜ cần tạo)
-order=5  RfPermissionActionSeeder→ gán action available (⬜ cần tạo)
-order=6  PermissionRoleSeeder    → gán permission+action per role (⬜ cần tạo)
+order=4  PermissionSeeder        → 5 permissions: accounts, medical-records, medical-records-approval, patient-search, dashboard (✅ đã có)
+order=5  PermissionRoleSeeder    → gán permission+action cho 3 roles: admin/doctor/employee (✅ đã có)
 ```
 
 ---

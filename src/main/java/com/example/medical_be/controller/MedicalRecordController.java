@@ -28,9 +28,11 @@ import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.routes.APIRoutes;
 import com.example.medical_be.service.IMedicalRecordService;
 import com.example.medical_be.swagger.GroupAPIConstant;
+import com.example.medical_be.swagger.MedicalRecordApiExamples;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,7 +53,8 @@ public class MedicalRecordController {
                description = "Upload file lên server, gọi OCR API xử lý, tự động tạo/tìm bệnh nhân, trả về bệnh án ở trạng thái Extracted")
     @ApiResponse(responseCode = "200", description = "Upload và xử lý OCR thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.UPLOAD_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:create')")
     @PostMapping(value = APIRoutes.MEDICAL_RECORD_UPLOAD, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JSONResponse<?>> upload(
@@ -67,7 +70,8 @@ public class MedicalRecordController {
                description = "Python AI service gọi về sau khi xử lý ảnh: lưu extractedData + labData, tự động tạo/tìm bệnh nhân theo BHYT, chuyển status → Extracted")
     @ApiResponse(responseCode = "200", description = "Lưu kết quả OCR thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.OCR_RESULT_SUCCESS)))
     @PreAuthorize("isAuthenticated()")
     @PostMapping(APIRoutes.MEDICAL_RECORD_OCR_RESULT)
     public ResponseEntity<JSONResponse<?>> ocrResult(@Valid @RequestBody OcrResultReq req) {
@@ -82,7 +86,8 @@ public class MedicalRecordController {
                description = "Employee chỉ thấy bệnh án của mình. Admin/Doctor thấy tất cả. Có thể filter theo status, patientId")
     @ApiResponse(responseCode = "200", description = "Lấy danh sách thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.LIST_RECORD_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:view')")
     @GetMapping(APIRoutes.MEDICAL_RECORD_LIST)
     public ResponseEntity<JSONResponse<?>> list(@ModelAttribute MedicalRecordListReq req) {
@@ -97,7 +102,8 @@ public class MedicalRecordController {
                description = "Xem chi tiết bệnh án: thông tin bệnh nhân, extracted fields, lab results")
     @ApiResponse(responseCode = "200", description = "Lấy chi tiết thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.DETAIL_RECORD_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:view')")
     @GetMapping(APIRoutes.MEDICAL_RECORD_DETAIL)
     public ResponseEntity<JSONResponse<?>> detail(@PathVariable Long id) {
@@ -110,11 +116,12 @@ public class MedicalRecordController {
 
    
     
-    @Operation(summary = "Cap nhat chi tiet benh an",
-               description = "Nhan vien cap nhat lai toan bo thong tin dang hien thi o man hinh chi tiet sau OCR")
-    @ApiResponse(responseCode = "200", description = "Cap nhat chi tiet thanh cong",
+    @Operation(summary = "Cập nhật chi tiết bệnh án",
+               description = "Nhân viên cập nhật lại toàn bộ thông tin đang hiển thị ở màn hình chi tiết sau OCR")
+    @ApiResponse(responseCode = "200", description = "Cập nhật chi tiết thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.UPDATE_DETAIL_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:edit')")
     @PutMapping(APIRoutes.MEDICAL_RECORD_UPDATE_DETAIL)
     public ResponseEntity<JSONResponse<?>> updateDetail(@Valid @RequestBody UpdateMedicalRecordDetailReq req) {
@@ -129,7 +136,8 @@ public class MedicalRecordController {
                description = "Nhân viên chỉnh sửa giá trị một trường OCR sau khi kiểm tra")
     @ApiResponse(responseCode = "200", description = "Cập nhật thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.UPDATE_FIELD_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:edit')")
     @PutMapping(APIRoutes.MEDICAL_RECORD_FIELD_UPDATE)
     public ResponseEntity<JSONResponse<?>> updateField(@Valid @RequestBody UpdateExtractedFieldReq req) {
@@ -145,6 +153,7 @@ public class MedicalRecordController {
     @ApiResponse(responseCode = "200", description = "Submit thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = JSONResponse.class)))
+                                   // examples = @ExampleObject(value = MedicalRecordApiExamples.SUBMIT_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:edit')")
     @PutMapping(APIRoutes.MEDICAL_RECORD_SUBMIT)
     public ResponseEntity<JSONResponse<?>> submit(@PathVariable Long id) {
@@ -160,6 +169,7 @@ public class MedicalRecordController {
     @ApiResponse(responseCode = "200", description = "Duyệt thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = JSONResponse.class)))
+                                   // examples = @ExampleObject(value = MedicalRecordApiExamples.APPROVE_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records-approval:create')")
     @PutMapping(APIRoutes.MEDICAL_RECORD_APPROVE)
     public ResponseEntity<JSONResponse<?>> approve(@PathVariable Long id) {
@@ -175,6 +185,7 @@ public class MedicalRecordController {
     @ApiResponse(responseCode = "200", description = "Từ chối thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = JSONResponse.class)))
+                               //     examples = @ExampleObject(value = MedicalRecordApiExamples.REJECT_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records-approval:cancel')")
     @PutMapping(APIRoutes.MEDICAL_RECORD_REJECT)
     public ResponseEntity<JSONResponse<?>> reject(@Valid @RequestBody RejectMedicalRecordReq req) {
@@ -189,7 +200,8 @@ public class MedicalRecordController {
                description = "Admin xóa vĩnh viễn bệnh án và toàn bộ dữ liệu liên quan (OCR regions, extracted fields, lab results)")
     @ApiResponse(responseCode = "200", description = "Xóa thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = JSONResponse.class)))
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = MedicalRecordApiExamples.DELETE_SUCCESS)))
     @PreAuthorize("hasAuthority('medical-records:delete')")
     @DeleteMapping(APIRoutes.MEDICAL_RECORD_DELETE)
     public ResponseEntity<JSONResponse<?>> delete(@PathVariable Long id) {

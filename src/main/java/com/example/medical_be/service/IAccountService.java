@@ -7,12 +7,14 @@ import com.example.medical_be.dto.req.account.UpdateAccountReq;
 import com.example.medical_be.dto.req.account.UpdateProfileReq;
 import com.example.medical_be.dto.res.InfoAccountRes;
 import com.example.medical_be.dto.res.PagedResponse;
+import java.util.List;
 
 public interface IAccountService {
       public InfoAccountRes  registerAccount(RegisterAccountReq req);
       public InfoAccountRes createAccount(CreateAccountReq req);
       public void activeAccount(String token);
       public InfoAccountRes getInfoProfile();
+      public List<String> getMyPermissions();
       public InfoAccountRes updateProfile(UpdateProfileReq req);
       public InfoAccountRes detailAccount(Long id);
       public InfoAccountRes updateAccount(UpdateAccountReq input);

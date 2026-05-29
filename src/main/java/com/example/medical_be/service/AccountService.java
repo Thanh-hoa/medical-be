@@ -17,6 +17,7 @@ import com.example.medical_be.exception.ApplicationException;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.mapper.AccountMapper;
 import com.example.medical_be.repository.AccountRepository;
+import com.example.medical_be.repository.PermissionRoleRepository;
 import com.example.medical_be.repository.RfAccounrRoleRepository;
 import com.example.medical_be.repository.RoleRepository;
 import com.example.medical_be.support.AccountSupportCreateToken;
@@ -52,11 +53,11 @@ import java.util.Map;
 @Slf4j
 public class AccountService implements IAccountService {
 
-        private static final Map<String, String> SORT_MAP = Map.of(
+    private static final Map<String, String> SORT_MAP = Map.of(
             "name", "name",
             "email", "email",
             "created_at", "createdAt");
-            
+
     final AccountRepository accountRepository;
     final AccountValidate commonAccountValidate;
     final ActiveAccountValidate activeAccountValidate;
@@ -66,6 +67,7 @@ public class AccountService implements IAccountService {
     final AccountMapper accountMapper;
     final RoleRepository roleRepository;
     final RfAccounrRoleRepository rfAccounrRoleRepository;
+    final PermissionRoleRepository permissionRoleRepository;
     final IMessageTranslator messageTranslator;
     final AccountSupport currentAccountProvider;
 
@@ -109,17 +111,27 @@ public class AccountService implements IAccountService {
         if (req.gender() != null && !req.gender().isBlank()) {
             account.setGender(Gender.valueOf(req.gender()));
         }
+        Account savedAccount = accountRepository.save(account);
         if (req.roles() != null && !req.roles().isEmpty()) {
-            assignRolesToAccount(account.getId(), req.roles());
+            assignRolesToAccount(savedAccount.getId(), req.roles());
         }
-        accountSentMailHelperService.sendInfoAccountEmailSafely(account, defaultPassword);
-        return accountMapper.toInfoAccount(accountRepository.save(account));
+        accountSentMailHelperService.sendInfoAccountEmailSafely(savedAccount, defaultPassword);
+        return accountMapper.toInfoAccount(accountRepository.findById(savedAccount.getId())
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("account.not_found"))));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InfoAccountRes getInfoProfile() {
-        Account account = commonAccountValidate.validateAccountExist(currentAccountProvider.getCurrentAccountId());
+        Long accountId = currentAccountProvider.getCurrentAccountId();
+        Account account = commonAccountValidate.validateAccountExist(accountId);
         return accountMapper.toInfoAccount(account);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getMyPermissions() {
+        return permissionRoleRepository.findPermissionStringsByAccountId(currentAccountProvider.getCurrentAccountId());
     }
 
     @Override
@@ -165,13 +177,15 @@ public class AccountService implements IAccountService {
         if (input.isActive() != null) {
             account.setIsActive(input.isActive());
         }
-        Account infoAccountUpdated = accountRepository.save(account);
+        accountRepository.save(account);
 
         if (input.roles() != null && !input.roles().isEmpty()) {
             assignRolesToAccount(account.getId(), input.roles());
         }
 
-        return accountMapper.toInfoAccount(infoAccountUpdated);
+        Account updatedAccount = accountRepository.findById(account.getId())
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("account.not_found")));
+        return accountMapper.toInfoAccount(updatedAccount);
     }
 
     @Override
@@ -196,6 +210,7 @@ public class AccountService implements IAccountService {
 
     
     @Override
+    @Transactional(readOnly = true)
     public PagedResponse<InfoAccountRes> listAccount(AccountListReq filter) {
         int validatedPage = PaginationUtils.normalizePage(filter.page(), messageTranslator);
         int validatedLimit = PaginationUtils.normalizeLimit(filter.limit(), messageTranslator);
