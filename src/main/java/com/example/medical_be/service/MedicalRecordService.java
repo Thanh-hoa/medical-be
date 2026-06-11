@@ -24,7 +24,7 @@ import com.example.medical_be.dto.req.medicalRecord.UpdateExtractedFieldReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateMedicalRecordDetailReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateMedicalRecordPatientReq;
 import com.example.medical_be.dto.req.patient.CreatePatientReq;
-import com.example.medical_be.dto.req.patient.UpdatePatiientReq;
+import com.example.medical_be.dto.req.patient.UpdatePatientReq;
 import com.example.medical_be.dto.res.MedicalRecordDetailRes;
 import com.example.medical_be.dto.res.MedicalRecordSummaryRes;
 import com.example.medical_be.dto.res.OcrResponse;
@@ -106,7 +106,6 @@ public class MedicalRecordService implements IMedicalRecordService {
             }
         }
 
-        record.setUpdatedAt(LocalDateTime.now());
         return medicalRecordMapper.toDetail(medicalRecordRepository.save(record));
     }
 
@@ -165,7 +164,6 @@ public class MedicalRecordService implements IMedicalRecordService {
             record.setPatientId(upsertPatient(record, req.patient()).getId());
         }
 
-        record.setUpdatedAt(LocalDateTime.now());
         return medicalRecordMapper.toDetail(medicalRecordRepository.save(record));
     }
 
@@ -177,7 +175,6 @@ public class MedicalRecordService implements IMedicalRecordService {
                 ? record.getExtractedData() : new ExtractedDataDto();
         setExtractedField(data, req.fieldName(), req.fieldValue());
         record.setExtractedData(data);
-        record.setUpdatedAt(LocalDateTime.now());
         medicalRecordRepository.save(record);
     }
 
@@ -194,7 +191,6 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setStatus(MedicalRecordStatus.PENDING_DOCTOR_REVIEW);
         record.setVerifiedBy(accountSupport.getCurrentAccountId());
         record.setVerifiedAt(LocalDateTime.now());
-        record.setUpdatedAt(LocalDateTime.now());
         return medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
     }
 
@@ -211,7 +207,6 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setStatus(MedicalRecordStatus.APPROVED);
         record.setApprovedBy(accountSupport.getCurrentAccountId());
         record.setApprovedAt(LocalDateTime.now());
-        record.setUpdatedAt(LocalDateTime.now());
         return medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
     }
 
@@ -221,7 +216,10 @@ public class MedicalRecordService implements IMedicalRecordService {
         if (!accountSupport.isAdmin()) {
             throw new ApplicationException(messageTranslator.getMessage("record.delete.not_allowed"));
         }
-        medicalRecordRepository.delete(findById(id));
+        MedicalRecord record = findById(id);
+        record.setIsDelete(true);
+        record.setDeletedAt(LocalDateTime.now());
+        medicalRecordRepository.save(record);
     }
 
     private MedicalRecord findById(Long id) {
@@ -241,7 +239,7 @@ public class MedicalRecordService implements IMedicalRecordService {
         if (req.bhyt() == null || req.bhyt().isBlank() || req.name() == null || req.name().isBlank()) {
             throw new ApplicationException(messageTranslator.getMessage("patient.not_found"));
         }
-        return patientService.update(new UpdatePatiientReq(
+        return patientService.update(new UpdatePatientReq(
                 record.getPatientId(), req.bhyt(), req.name(),
                 req.dob(), req.gender(), req.address(), req.phone()));
     }

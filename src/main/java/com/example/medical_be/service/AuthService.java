@@ -61,7 +61,7 @@ public class AuthService implements IAuthService {
 
         AccountUserDetails userDetails = (AccountUserDetails) accountUserDetailsService.loadUserByUsername(username);
         if (!userDetails.isEnabled()) {
-            throw new ApplicationException("login.account_inactive");
+            throw new ApplicationException(messageTranslator.getMessage("login.account_inactive"));
         }
         
         String newToken = jwtService.generationToken(username, userId);

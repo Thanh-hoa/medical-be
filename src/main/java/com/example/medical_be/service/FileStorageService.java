@@ -2,6 +2,7 @@ package com.example.medical_be.service;
 
 import com.example.medical_be.dto.res.FileUploadInfo;
 import com.example.medical_be.exception.ApplicationException;
+import com.example.medical_be.i18n.IMessageTranslator;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,16 @@ public class FileStorageService {
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
 
     private final Path uploadDir;
+    private final String serverUrl;
+    private final IMessageTranslator messageTranslator;
 
-    public FileStorageService(@Value("${app.upload-dir:uploads/photos}") String uploadDir) {
+    public FileStorageService(
+            @Value("${app.upload-dir:uploads/photos}") String uploadDir,
+            @Value("${app.server.url:http://localhost:8080}") String serverUrl,
+            IMessageTranslator messageTranslator) {
         this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+        this.serverUrl = serverUrl;
+        this.messageTranslator = messageTranslator;
         try {
             Files.createDirectories(this.uploadDir);
         } catch (IOException e) {
@@ -33,21 +41,23 @@ public class FileStorageService {
     }
 
     public FileUploadInfo store(MultipartFile file) {
-        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename() != null ? file.getOriginalFilename() : "");
+        String originalFilename = StringUtils.cleanPath(
+                file.getOriginalFilename() != null ? file.getOriginalFilename() : "");
         String extension = StringUtils.getFilenameExtension(originalFilename);
 
         if (extension == null || !ALLOWED_EXTENSIONS.contains(extension.toLowerCase())) {
-            throw new ApplicationException("file.invalid_type");
+            throw new ApplicationException(messageTranslator.getMessage("file.invalid_type"));
         }
 
         String filename = UUID.randomUUID() + "." + extension.toLowerCase();
         try {
-            Files.copy(file.getInputStream(), this.uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), this.uploadDir.resolve(filename),
+                    StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new ApplicationException("file.upload_failed");
+            throw new ApplicationException(messageTranslator.getMessage("file.upload_failed"));
         }
 
-        String filePath = "http://localhost:8080/uploads/photos/" + filename;
+        String filePath = serverUrl + "/uploads/photos/" + filename;
         return new FileUploadInfo(filePath, originalFilename, extension.toLowerCase());
     }
 }

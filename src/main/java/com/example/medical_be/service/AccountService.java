@@ -18,7 +18,7 @@ import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.mapper.AccountMapper;
 import com.example.medical_be.repository.AccountRepository;
 import com.example.medical_be.repository.PermissionRoleRepository;
-import com.example.medical_be.repository.RfAccounrRoleRepository;
+import com.example.medical_be.repository.RfAccountRoleRepository;
 import com.example.medical_be.repository.RoleRepository;
 import com.example.medical_be.support.AccountSupportCreateToken;
 import com.example.medical_be.support.PaginationUtils;
@@ -66,7 +66,7 @@ public class AccountService implements IAccountService {
     final AccountSentMailHelperService accountSentMailHelperService;
     final AccountMapper accountMapper;
     final RoleRepository roleRepository;
-    final RfAccounrRoleRepository rfAccounrRoleRepository;
+    final RfAccountRoleRepository rfAccounrRoleRepository;
     final PermissionRoleRepository permissionRoleRepository;
     final IMessageTranslator messageTranslator;
     final AccountSupport currentAccountProvider;
@@ -249,7 +249,7 @@ public class AccountService implements IAccountService {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 parsedBirthday = LocalDate.parse(birthday, formatter);
             } catch (DateTimeParseException e) {
-                throw new ApplicationException("account.birthday.invalid_format");
+                throw new ApplicationException(messageTranslator.getMessage("account.birthday.invalid_format"));
             }
         }
         Account account = Account.builder()
@@ -262,7 +262,6 @@ public class AccountService implements IAccountService {
                 .isActive(isActive)
                 .photoUrl(photoUrl)
                 .isDelete(false)
-                .createdAt(LocalDateTime.now())
                 .createdBy(createBy)
                 .build();
 
@@ -344,17 +343,15 @@ public class AccountService implements IAccountService {
 
         if (phoneNumber != null)
             account.setPhoneNumber(phoneNumber);
-
-        account.setUpdatedAt(LocalDateTime.now());
     }
     
     @Override
     public void activeAccount(String token) {
         String email  = activeAccountValidate.validateToken(token);
         Account account = accountRepository.findByEmail(email).orElseThrow(
-                () -> new ApplicationException("account.not_found"));
+                () -> new ApplicationException(messageTranslator.getMessage("account.not_found")));
         if(account.getIsActive()){
-            throw new ApplicationException("account.already_active");
+            throw new ApplicationException(messageTranslator.getMessage("account.already_active"));
         }
         account.setIsActive(true);
         account.setEmailVerifyAt(LocalDateTime.now());

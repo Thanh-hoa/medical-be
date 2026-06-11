@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.example.medical_be.dto.res.OcrResponse;
 import com.example.medical_be.exception.ApplicationException;
+import com.example.medical_be.i18n.IMessageTranslator;
 
 import io.netty.handler.timeout.ReadTimeoutException;
 import reactor.core.publisher.Mono;
@@ -28,17 +29,19 @@ public class OcrService {
 
     private static final Logger logger = LoggerFactory.getLogger(OcrService.class);
 
-
     private final WebClient webClient;
     private final int maxRetries;
     private final int timeoutSeconds;
+    private final IMessageTranslator messageTranslator;
 
     public OcrService(
             @Value("${ocr.api.url:http://localhost:8000}") String ocrApiUrl,
             @Value("${ocr.api.max-retries:3}") int maxRetries,
-            @Value("${ocr.api.timeout-seconds:60}") int timeoutSeconds) {
+            @Value("${ocr.api.timeout-seconds:60}") int timeoutSeconds,
+            IMessageTranslator messageTranslator) {
         this.maxRetries = maxRetries;
         this.timeoutSeconds = timeoutSeconds;
+        this.messageTranslator = messageTranslator;
         this.webClient = WebClient.builder()
                 .baseUrl(ocrApiUrl)
                 .codecs(c -> c.defaultCodecs().maxInMemorySize(20 * 1024 * 1024))
@@ -47,7 +50,7 @@ public class OcrService {
 
     public OcrResponse processImage(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new ApplicationException("File không được để trống");
+            throw new ApplicationException(messageTranslator.getMessage("ocr.file.empty"));
         }
 
         logger.info("Processing OCR for file: {}", file.getOriginalFilename());
@@ -60,8 +63,8 @@ public class OcrService {
                 public String getFilename() { return filename; }
             });
         } catch (Exception e) {
-            logger.error("Lỗi đọc file: ", e);
-            throw new ApplicationException("Không đọc được file: " + e.getMessage());
+            logger.error("Failed to read file bytes: ", e);
+            throw new ApplicationException(messageTranslator.getMessage("ocr.file.read_failed"));
         }
 
         try {
@@ -74,26 +77,26 @@ public class OcrService {
                             status -> status.isError(),
                             resp -> resp.bodyToMono(String.class)
                                     .flatMap(body -> Mono.error(
-                                            new ApplicationException("OCR API lỗi: " + body))))
+                                            new ApplicationException(
+                                                    messageTranslator.getMessage("ocr.api.error")))))
                     .bodyToMono(OcrResponse.class)
                     .timeout(Duration.ofSeconds(timeoutSeconds))
                     .retryWhen(Retry.max(maxRetries)
-                            .filter(throwable -> isRetryable(throwable)))
+                            .filter(this::isRetryable))
                     .doOnError(e -> logger.error("OCR processing failed after retries: ", e))
                     .block();
         } catch (WebClientResponseException e) {
             logger.error("OCR API response error - Status: {}, Body: {}",
                     e.getStatusCode(), e.getResponseBodyAsString());
-            throw new ApplicationException("OCR API lỗi: " + e.getMessage());
+            throw new ApplicationException(messageTranslator.getMessage("ocr.api.error"));
         } catch (Exception e) {
             logger.error("OCR processing error: ", e);
-            throw new ApplicationException("Lỗi xử lý OCR: " + e.getMessage());
+            throw new ApplicationException(messageTranslator.getMessage("ocr.processing.failed"));
         }
     }
 
     private boolean isRetryable(Throwable throwable) {
-        if (throwable instanceof WebClientResponseException) {
-            WebClientResponseException e = (WebClientResponseException) throwable;
+        if (throwable instanceof WebClientResponseException e) {
             return e.getStatusCode().is5xxServerError();
         }
         return throwable instanceof ConnectException

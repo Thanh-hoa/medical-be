@@ -3,6 +3,9 @@ package com.example.medical_be.entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -68,10 +71,11 @@ public class Account {
      @Column(name="photo_url")
      String photoUrl;
 
-     @Column(name="created_at")
-     @Builder.Default
-     LocalDateTime createdAt = LocalDateTime.now();
+     @CreationTimestamp
+     @Column(name="created_at", updatable = false)
+     LocalDateTime createdAt;
 
+     @UpdateTimestamp
      @Column(name="updated_at")
      LocalDateTime updatedAt;
 

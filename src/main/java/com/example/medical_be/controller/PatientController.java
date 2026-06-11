@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.medical_be.dto.JSONResponse;
 import com.example.medical_be.dto.req.patient.CreatePatientReq;
 import com.example.medical_be.dto.req.patient.PatientSearchReq;
-import com.example.medical_be.dto.req.patient.UpdatePatiientReq;
+import com.example.medical_be.dto.req.patient.UpdatePatientReq;
 import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
@@ -100,7 +100,7 @@ public class PatientController {
     @PreAuthorize("hasAuthority('patient-search:edit')")
     @PutMapping(APIRoutes.PATIENT_UPDATE)
     public ResponseEntity<JSONResponse<?>> update(
-            @Valid @RequestBody UpdatePatiientReq req) {
+            @Valid @RequestBody UpdatePatientReq req) {
         return ResponseEntity.ok(JSONResponse.<PatientRes>builder()
                 .isError(false)
                 .message(messageTranslator.getMessage("patient.update_success"))

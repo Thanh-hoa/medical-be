@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.example.medical_be.entity.RfAccountRole;
 
 @Repository
-public interface RfAccounrRoleRepository extends JpaRepository<RfAccountRole , Long> {
+public interface RfAccountRoleRepository extends JpaRepository<RfAccountRole , Long> {
 
     Optional<RfAccountRole> findByAccountIdAndRoleId(Long accountId ,long roleId);
     List<RfAccountRole> findByAccountId(Long accountId);
