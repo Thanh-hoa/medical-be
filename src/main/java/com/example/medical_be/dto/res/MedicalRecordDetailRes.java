@@ -2,8 +2,8 @@ package com.example.medical_be.dto.res;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
+import com.example.medical_be.dto.json.ExtractedDataDto;
 import com.example.medical_be.dto.json.LabResultJson;
 
 import lombok.AccessLevel;
@@ -28,7 +28,6 @@ public class MedicalRecordDetailRes {
     String fileType;
     String originalImagePath;
     String notes;
-    String rejectionReason;
     Long uploadedBy;
     Long verifiedBy;
     LocalDateTime verifiedAt;
@@ -38,6 +37,6 @@ public class MedicalRecordDetailRes {
     LocalDateTime updatedAt;
 
     PatientRes patient;
-    Map<String, String> extractedData;
+    ExtractedDataDto extractedData;
     List<LabResultJson> labData;
 }

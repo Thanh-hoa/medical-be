@@ -16,10 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.medical_be.dto.req.patient.CreatePatientReq;
 import com.example.medical_be.dto.req.patient.PatientSearchReq;
 import com.example.medical_be.dto.req.patient.UpdatePatiientReq;
-import com.example.medical_be.dto.res.MedicalRecordSummaryRes;
+import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
-import com.example.medical_be.dto.res.PatientWithRecordsRes;
 import com.example.medical_be.entity.MedicalRecord;
 import com.example.medical_be.entity.Patient;
 import com.example.medical_be.exception.ApplicationException;
@@ -28,7 +27,6 @@ import com.example.medical_be.mapper.PatientMapper;
 import com.example.medical_be.repository.MedicalRecordRepository;
 import com.example.medical_be.repository.PatientRepository;
 import com.example.medical_be.support.PaginationUtils;
-import com.example.medical_be.validation.PatientValidate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -44,26 +42,24 @@ public class PatientService implements IPatientService {
     final MedicalRecordRepository medicalRecordRepository;
     final IMessageTranslator messageTranslator;
     final PatientMapper patientMapper;
-    final PatientValidate patientValidate;
 
    
 
     @Override
     @Transactional(readOnly = true)
-    public PatientWithRecordsRes findByBhyt(String search) {
+    public MedicalRecordSummaryPatient findByBhyt(String search) {
         Patient patient = patientRepository.findByBhyt(search)
                 .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("patient.not_found")));
 
-        
-        Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<MedicalRecord> recordPage =
                 medicalRecordRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId(), pageable);
 
-        List<MedicalRecordSummaryRes> records = recordPage.getContent().stream()
-                .map(this::toSummary)
+        List<MedicalRecordSummaryPatient.Item> records = recordPage.getContent().stream()
+                .map(this::toSummaryItem)
                 .toList();
 
-        return PatientWithRecordsRes.builder()
+        return MedicalRecordSummaryPatient.builder()
                 .patient(patientMapper.toRes(patient))
                 .records(records)
                 .totalRecords(recordPage.getTotalElements())
@@ -133,19 +129,15 @@ public class PatientService implements IPatientService {
     }
 
 
-    private MedicalRecordSummaryRes toSummary(MedicalRecord m) {
-        return MedicalRecordSummaryRes.builder()
+    private MedicalRecordSummaryPatient.Item toSummaryItem(MedicalRecord m) {
+        var ext = m.getExtractedData();
+        return MedicalRecordSummaryPatient.Item.builder()
                 .id(m.getId())
                 .recordNumber(m.getRecordNumber())
                 .status(m.getStatus() != null ? m.getStatus().getDbValue() : null)
-                .department(m.getDepartment())
-                .recordType(m.getRecordType())
-                .fileName(m.getFileName())
-                .fileType(m.getFileType())
-                .uploadedBy(m.getUploadedBy())
-                .patient(patientMapper.toRes(patientValidate.validatePatientExist(m.getPatientId())))
-                .createdAt(m.getCreatedAt())
-                .updatedAt(m.getUpdatedAt())
+                .department(m.getDepartment() != null ? m.getDepartment() : (ext != null ? ext.getDepartment() : null))
+                .signerName(ext != null ? ext.getSignerName() : null)
+                .diagnosis(ext != null ? ext.getDiagnosis() : null)
                 .build();
     }
 }

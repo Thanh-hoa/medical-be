@@ -16,9 +16,9 @@ import com.example.medical_be.dto.JSONResponse;
 import com.example.medical_be.dto.req.patient.CreatePatientReq;
 import com.example.medical_be.dto.req.patient.PatientSearchReq;
 import com.example.medical_be.dto.req.patient.UpdatePatiientReq;
+import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
-import com.example.medical_be.dto.res.PatientWithRecordsRes;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.routes.APIRoutes;
 import com.example.medical_be.service.IPatientService;
@@ -52,7 +52,7 @@ public class PatientController {
     @PreAuthorize("hasAuthority('patient-search:view')")
     @GetMapping(APIRoutes.PATIENT_SEARCH)
     public ResponseEntity<JSONResponse<?>> searchByBhyt(@RequestParam String bhyt) {
-        return ResponseEntity.ok(JSONResponse.<PatientWithRecordsRes>builder()
+        return ResponseEntity.ok(JSONResponse.<MedicalRecordSummaryPatient>builder()
                 .isError(false)
                 .message(messageTranslator.getMessage("patient.detail_success"))
                 .data(patientService.findByBhyt(bhyt))

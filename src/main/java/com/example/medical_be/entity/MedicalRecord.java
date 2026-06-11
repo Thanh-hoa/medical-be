@@ -2,13 +2,12 @@ package com.example.medical_be.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.example.medical_be.dto.json.ExtractedDataDto;
 import com.example.medical_be.dto.json.LabResultJson;
 
 import jakarta.persistence.Column;
@@ -70,9 +69,6 @@ public class MedicalRecord {
     @Column(name = "notes", columnDefinition = "text")
     String notes;
 
-    @Column(name = "rejection_reason", columnDefinition = "text")
-    String rejectionReason;
-
     @Column(name = "approved_by")
     Long approvedBy;
 
@@ -90,7 +86,7 @@ public class MedicalRecord {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "extracted_data", columnDefinition = "jsonb")
     @Builder.Default
-    Map<String, String> extractedData = new HashMap<>();
+    ExtractedDataDto extractedData = new ExtractedDataDto();
 
    
     @JdbcTypeCode(SqlTypes.JSON)

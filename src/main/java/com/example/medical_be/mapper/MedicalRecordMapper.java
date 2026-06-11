@@ -27,7 +27,6 @@ public class MedicalRecordMapper {
                 .fileType(record.getFileType())
                 .originalImagePath(record.getOriginalImagePath())
                 .notes(record.getNotes())
-                .rejectionReason(record.getRejectionReason())
                 .uploadedBy(record.getUploadedBy())
                 .verifiedBy(record.getVerifiedBy())
                 .verifiedAt(record.getVerifiedAt())
