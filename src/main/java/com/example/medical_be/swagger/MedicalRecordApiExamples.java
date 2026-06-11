@@ -58,7 +58,6 @@ public class MedicalRecordApiExamples {
                     "patient":""" + PATIENT_DATA + """
                 ,
                     "extractedData": {
-                        "patientName": "Nguyễn Văn A",
                         "bhyt": "GD4030000123456",
                         "dob": "1990-05-15",
                         "gender": "Nam",
@@ -81,14 +80,6 @@ public class MedicalRecordApiExamples {
                         }
                     ]
                 }
-            }
-            """;
-
-    public static final String OCR_RESULT_SUCCESS = """
-            {
-                "isError": false,
-                "message": "Lưu kết quả OCR thành công",
-                "data":""" + SUMMARY_DATA + """
             }
             """;
 
@@ -169,7 +160,6 @@ public class MedicalRecordApiExamples {
                     "patient":""" + PATIENT_DATA + """
                 ,
                     "extractedData": {
-                        "patientName": "Nguyễn Văn A",
                         "bhyt": "GD4030000123456",
                         "dob": "1990-05-15",
                         "gender": "Nam",
@@ -228,7 +218,6 @@ public class MedicalRecordApiExamples {
                     "patient":""" + PATIENT_DATA + """
                 ,
                     "extractedData": {
-                        "patientName": "Nguyễn Văn A",
                         "bhyt": "GD4030000123456",
                         "department": "Xét nghiệm"
                     },

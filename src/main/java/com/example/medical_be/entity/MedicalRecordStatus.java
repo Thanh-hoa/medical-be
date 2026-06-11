@@ -4,8 +4,7 @@ public enum MedicalRecordStatus {
     PROCESSING("Processing"),
     EXTRACTED("Extracted"),
     PENDING_DOCTOR_REVIEW("Pending Doctor Review"),
-    APPROVED("Approved"),
-    REJECTED("Rejected");
+    APPROVED("Approved");
 
     private final String dbValue;
 
