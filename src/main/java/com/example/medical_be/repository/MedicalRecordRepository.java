@@ -17,10 +17,10 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
 
     boolean existsByRecordNumber(String recordNumber);
 
-    // Employee: chỉ thấy record của mình
     @Query("""
             SELECT m FROM MedicalRecord m
             WHERE m.uploadedBy = :uploadedBy
+            AND (m.isDelete IS NULL OR m.isDelete = false)
             AND (:status IS NULL OR m.status = :status)
             AND (
                 :q IS NULL OR :q = '' OR
@@ -33,10 +33,11 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
             @Param("q") String q,
             Pageable pageable);
 
-    // Admin/Doctor: thấy tất cả, filter theo status và patient
+    
     @Query("""
             SELECT m FROM MedicalRecord m
-            WHERE (:status IS NULL OR m.status = :status)
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND (:status IS NULL OR m.status = :status)
             AND (:patientId IS NULL OR m.patientId = :patientId)
             AND (
                 :q IS NULL OR :q = '' OR
@@ -49,8 +50,24 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
             @Param("q") String q,
             Pageable pageable);
 
-    // Lấy tất cả record của 1 bệnh nhân, mới nhất trước
-    Page<MedicalRecord> findByPatientIdOrderByCreatedAtDesc(Long patientId, Pageable pageable);
+    @Query("""
+            SELECT m FROM MedicalRecord m
+            WHERE m.patientId = :patientId
+            AND (m.isDelete IS NULL OR m.isDelete = false)
+            ORDER BY m.createdAt DESC
+            """)
+    Page<MedicalRecord> findByPatientIdOrderByCreatedAtDesc(
+            @Param("patientId") Long patientId,
+            Pageable pageable);
 
-    Optional<MedicalRecord> findByIdAndUploadedBy(Long id, Long uploadedBy);
+    
+    @Query("""
+            SELECT m FROM MedicalRecord m
+            WHERE m.id = :id
+            AND m.uploadedBy = :uploadedBy
+            AND (m.isDelete IS NULL OR m.isDelete = false)
+            """)
+    Optional<MedicalRecord> findByIdAndUploadedBy(
+            @Param("id") Long id,
+            @Param("uploadedBy") Long uploadedBy);
 }

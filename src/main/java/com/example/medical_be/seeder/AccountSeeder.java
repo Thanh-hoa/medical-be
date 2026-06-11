@@ -10,7 +10,7 @@ import com.example.medical_be.entity.Account;
 import com.example.medical_be.entity.RfAccountRole;
 import com.example.medical_be.entity.Role;
 import com.example.medical_be.repository.AccountRepository;
-import com.example.medical_be.repository.RfAccounrRoleRepository;
+import com.example.medical_be.repository.RfAccountRoleRepository;
 import com.example.medical_be.repository.RoleRepository;
 import com.example.medical_be.support.constant.RoleConstant;
 
@@ -25,7 +25,7 @@ import java.util.Optional;
 public class AccountSeeder implements ISeeder {
     private final AccountRepository accountRepository;
     private final RoleRepository roleRepository;
-    private final RfAccounrRoleRepository rfAccounrRoleRepository;
+    private final RfAccountRoleRepository rfAccounrRoleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override

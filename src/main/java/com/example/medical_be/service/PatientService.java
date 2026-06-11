@@ -1,7 +1,6 @@
 package com.example.medical_be.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -15,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.medical_be.dto.req.patient.CreatePatientReq;
 import com.example.medical_be.dto.req.patient.PatientSearchReq;
-import com.example.medical_be.dto.req.patient.UpdatePatiientReq;
+import com.example.medical_be.dto.req.patient.UpdatePatientReq;
 import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
@@ -89,7 +88,7 @@ public class PatientService implements IPatientService {
 
     @Override
     @Transactional
-    public PatientRes update(UpdatePatiientReq req) {
+    public PatientRes update(UpdatePatientReq req) {
         Patient patient = patientRepository.findById(req.id())
                 .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("patient.not_found")));
 
@@ -103,7 +102,6 @@ public class PatientService implements IPatientService {
         patient.setGender(req.gender());
         patient.setAddress(req.address());
         patient.setPhone(req.phone());
-        patient.setUpdatedAt(LocalDateTime.now());
 
         return patientMapper.toRes(patientRepository.save(patient));
     }

@@ -1,6 +1,5 @@
 name: CI - Build & Test
 
-# Khi nào CI chạy?
 on:
   push:
     branches: [ '**' ]   

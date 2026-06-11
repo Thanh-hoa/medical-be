@@ -4,7 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.example.medical_be.dto.json.ExtractedDataDto;
@@ -94,10 +96,18 @@ public class MedicalRecord {
     @Builder.Default
     List<LabResultJson> labData = new ArrayList<>();
 
-    @Column(name = "created_at")
+    @Column(name = "is_delete")
     @Builder.Default
-    LocalDateTime createdAt = LocalDateTime.now();
+    Boolean isDelete = false;
 
+    @Column(name = "deleted_at")
+    LocalDateTime deletedAt;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    LocalDateTime createdAt;
+
+    @UpdateTimestamp
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
 }

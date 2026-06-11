@@ -2,7 +2,7 @@ package com.example.medical_be.dto.req.patient;
 
 import jakarta.validation.constraints.NotBlank;
 
-public record UpdatePatiientReq(
+public record UpdatePatientReq(
         Long id,
         @NotBlank String bhyt,
         @NotBlank String name,
