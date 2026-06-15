@@ -20,6 +20,7 @@ import com.example.medical_be.dto.json.ExtractedDataDto;
 import com.example.medical_be.dto.json.LabResultJson;
 import com.example.medical_be.dto.res.FileUploadInfo;
 import com.example.medical_be.dto.req.medicalRecord.MedicalRecordListReq;
+import com.example.medical_be.dto.req.medicalRecord.RejectMedicalRecordReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateExtractedFieldReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateMedicalRecordDetailReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateMedicalRecordPatientReq;
@@ -62,6 +63,7 @@ public class MedicalRecordService implements IMedicalRecordService {
     final AccountSupport accountSupport;
     final IMessageTranslator messageTranslator;
     final MedicalRecordMapper medicalRecordMapper;
+    final AuditLogService auditLogService;
 
     @Override
     @Transactional
@@ -106,7 +108,10 @@ public class MedicalRecordService implements IMedicalRecordService {
             }
         }
 
-        return medicalRecordMapper.toDetail(medicalRecordRepository.save(record));
+        MedicalRecordDetailRes result = medicalRecordMapper.toDetail(medicalRecordRepository.save(record));
+        auditLogService.log(AuditLogService.ACTION_UPLOAD, AuditLogService.RESOURCE_MEDICAL_RECORD,
+                result.getId(), null, "{\"status\":\"Extracted\"}");
+        return result;
     }
 
     @Override
@@ -181,7 +186,7 @@ public class MedicalRecordService implements IMedicalRecordService {
     @Override
     @Transactional
     public MedicalRecordSummaryRes submitForReview(Long id) {
-        if (!accountSupport.isEmployee()) {
+        if (!accountSupport.isEmployee() && !accountSupport.isAdmin()) {
             throw new ApplicationException(messageTranslator.getMessage("record.submit.not_allowed"));
         }
         MedicalRecord record = findAccessibleRecord(id);
@@ -191,7 +196,10 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setStatus(MedicalRecordStatus.PENDING_DOCTOR_REVIEW);
         record.setVerifiedBy(accountSupport.getCurrentAccountId());
         record.setVerifiedAt(LocalDateTime.now());
-        return medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
+        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
+        auditLogService.log(AuditLogService.ACTION_SUBMIT, AuditLogService.RESOURCE_MEDICAL_RECORD,
+                id, "{\"status\":\"Extracted\"}", "{\"status\":\"Pending Doctor Review\"}");
+        return result;
     }
 
     @Override
@@ -207,7 +215,53 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setStatus(MedicalRecordStatus.APPROVED);
         record.setApprovedBy(accountSupport.getCurrentAccountId());
         record.setApprovedAt(LocalDateTime.now());
-        return medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
+        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
+        auditLogService.log(AuditLogService.ACTION_APPROVE, AuditLogService.RESOURCE_MEDICAL_RECORD,
+                id, "{\"status\":\"Pending Doctor Review\"}", "{\"status\":\"Approved\"}");
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public MedicalRecordSummaryRes reject(RejectMedicalRecordReq req) {
+        if (!accountSupport.isDoctor() && !accountSupport.isAdmin()) {
+            throw new ApplicationException(messageTranslator.getMessage("record.reject.not_allowed"));
+        }
+        MedicalRecord record = findById(req.id());
+        if (record.getStatus() != MedicalRecordStatus.PENDING_DOCTOR_REVIEW) {
+            throw new ApplicationException(messageTranslator.getMessage("record.reject.invalid_status"));
+        }
+        record.setStatus(MedicalRecordStatus.REJECTED);
+        record.setRejectedBy(accountSupport.getCurrentAccountId());
+        record.setRejectedAt(LocalDateTime.now());
+        record.setRejectionReason(req.rejectionReason());
+        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
+        auditLogService.log(AuditLogService.ACTION_REJECT, AuditLogService.RESOURCE_MEDICAL_RECORD,
+                req.id(), "{\"status\":\"Pending Doctor Review\"}",
+                "{\"status\":\"Rejected\",\"reason\":\"" + req.rejectionReason().replace("\"", "'") + "\"}");
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public MedicalRecordSummaryRes resubmit(Long id) {
+        if (!accountSupport.isEmployee() && !accountSupport.isAdmin()) {
+            throw new ApplicationException(messageTranslator.getMessage("record.resubmit.not_allowed"));
+        }
+        MedicalRecord record = findAccessibleRecord(id);
+        if (record.getStatus() != MedicalRecordStatus.REJECTED) {
+            throw new ApplicationException(messageTranslator.getMessage("record.resubmit.invalid_status"));
+        }
+        record.setStatus(MedicalRecordStatus.PENDING_DOCTOR_REVIEW);
+        record.setRejectedBy(null);
+        record.setRejectedAt(null);
+        record.setRejectionReason(null);
+        record.setVerifiedBy(accountSupport.getCurrentAccountId());
+        record.setVerifiedAt(LocalDateTime.now());
+        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
+        auditLogService.log(AuditLogService.ACTION_RESUBMIT, AuditLogService.RESOURCE_MEDICAL_RECORD,
+                id, "{\"status\":\"Rejected\"}", "{\"status\":\"Pending Doctor Review\"}");
+        return result;
     }
 
     @Override
@@ -220,6 +274,8 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setIsDelete(true);
         record.setDeletedAt(LocalDateTime.now());
         medicalRecordRepository.save(record);
+        auditLogService.log(AuditLogService.ACTION_DELETE, AuditLogService.RESOURCE_MEDICAL_RECORD,
+                id, "{\"status\":\"" + record.getStatus().getDbValue() + "\"}", null);
     }
 
     private MedicalRecord findById(Long id) {

@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.medical_be.dto.JSONResponse;
 import com.example.medical_be.dto.req.medicalRecord.MedicalRecordListReq;
+import com.example.medical_be.dto.req.medicalRecord.RejectBodyReq;
+import com.example.medical_be.dto.req.medicalRecord.RejectMedicalRecordReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateExtractedFieldReq;
 import com.example.medical_be.dto.req.medicalRecord.UpdateMedicalRecordDetailReq;
 import com.example.medical_be.dto.res.MedicalRecordDetailRes;
@@ -146,7 +148,7 @@ public class MedicalRecordController {
     }
 
     @Operation(summary = "Gửi bệnh án để bác sĩ duyệt",
-               description = "Nhân viên submit bệnh án: Extracted → Pending Doctor Review. Tự động đánh dấu tất cả fields là verified")
+               description = "Nhân viên hoặc admin submit bệnh án: Extracted → Pending Doctor Review. Tự động đánh dấu tất cả fields là verified")
     @ApiResponse(responseCode = "200", description = "Submit thành công",
                  content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                                     schema = @Schema(implementation = JSONResponse.class)))
@@ -174,6 +176,37 @@ public class MedicalRecordController {
                 .isError(false)
                 .message(messageTranslator.getMessage("record.approve_success"))
                 .data(medicalRecordService.approve(id))
+                .build());
+    }
+
+    @Operation(summary = "Từ chối bệnh án",
+               description = "Bác sĩ/Admin từ chối bệnh án: Pending Doctor Review → Rejected. Phải ghi lý do từ chối")
+    @ApiResponse(responseCode = "200", description = "Từ chối thành công",
+                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = JSONResponse.class)))
+    @PreAuthorize("hasAuthority('medical-records-approval:create')")
+    @PutMapping(APIRoutes.MEDICAL_RECORD_REJECT)
+    public ResponseEntity<JSONResponse<?>> reject(@PathVariable Long id,
+                                                   @Valid @RequestBody RejectBodyReq body) {
+        return ResponseEntity.ok(JSONResponse.<MedicalRecordSummaryRes>builder()
+                .isError(false)
+                .message(messageTranslator.getMessage("record.reject_success"))
+                .data(medicalRecordService.reject(new RejectMedicalRecordReq(id, body.rejectionReason())))
+                .build());
+    }
+
+    @Operation(summary = "Nộp lại bệnh án sau khi bị từ chối",
+               description = "Nhân viên nộp lại bệnh án đã bị từ chối: Rejected → Pending Doctor Review")
+    @ApiResponse(responseCode = "200", description = "Nộp lại thành công",
+                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = JSONResponse.class)))
+    @PreAuthorize("hasAuthority('medical-records:edit')")
+    @PutMapping(APIRoutes.MEDICAL_RECORD_RESUBMIT)
+    public ResponseEntity<JSONResponse<?>> resubmit(@PathVariable Long id) {
+        return ResponseEntity.ok(JSONResponse.<MedicalRecordSummaryRes>builder()
+                .isError(false)
+                .message(messageTranslator.getMessage("record.resubmit_success"))
+                .data(medicalRecordService.resubmit(id))
                 .build());
     }
 

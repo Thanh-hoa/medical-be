@@ -1,5 +1,7 @@
 package com.example.medical_be.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -70,4 +72,54 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
     Optional<MedicalRecord> findByIdAndUploadedBy(
             @Param("id") Long id,
             @Param("uploadedBy") Long uploadedBy);
+
+    // Dashboard queries
+    @Query("SELECT COUNT(m) FROM MedicalRecord m WHERE (m.isDelete IS NULL OR m.isDelete = false)")
+    long countActive();
+
+    @Query("SELECT COUNT(m) FROM MedicalRecord m WHERE (m.isDelete IS NULL OR m.isDelete = false) AND m.status = :status")
+    long countByStatus(@Param("status") MedicalRecordStatus status);
+
+    @Query("SELECT COUNT(m) FROM MedicalRecord m WHERE (m.isDelete IS NULL OR m.isDelete = false) AND m.createdAt >= :from")
+    long countCreatedSince(@Param("from") LocalDateTime from);
+
+    @Query("SELECT COUNT(m) FROM MedicalRecord m WHERE (m.isDelete IS NULL OR m.isDelete = false) AND m.approvedAt >= :from")
+    long countApprovedSince(@Param("from") LocalDateTime from);
+
+    @Query("""
+            SELECT m.status, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            GROUP BY m.status
+            """)
+    List<Object[]> countGroupByStatus();
+
+    @Query("""
+            SELECT m.department, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.department IS NOT NULL AND m.department != ''
+            GROUP BY m.department
+            ORDER BY COUNT(m) DESC
+            """)
+    List<Object[]> countGroupByDepartment();
+
+    @Query("""
+            SELECT m.uploadedBy, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            GROUP BY m.uploadedBy
+            """)
+    List<Object[]> countGroupByUploadedBy();
+
+    @Query("""
+            SELECT m.approvedBy, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false) AND m.approvedBy IS NOT NULL
+            GROUP BY m.approvedBy
+            """)
+    List<Object[]> countGroupByApprovedBy();
+
+    @Query("""
+            SELECT m.rejectedBy, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false) AND m.rejectedBy IS NOT NULL
+            GROUP BY m.rejectedBy
+            """)
+    List<Object[]> countGroupByRejectedBy();
 }

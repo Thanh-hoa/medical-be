@@ -38,6 +38,19 @@ public class APIRoutes {
     public static final String MEDICAL_RECORD_PENDING_REVIEW = "medical-record/pending-review";
     public static final String MEDICAL_RECORD_SUBMIT        = "medical-record/{id}/submit";
     public static final String MEDICAL_RECORD_APPROVE       = "medical-record/{id}/approve";
+    public static final String MEDICAL_RECORD_REJECT        = "medical-record/{id}/reject";
+    public static final String MEDICAL_RECORD_RESUBMIT      = "medical-record/{id}/resubmit";
     public static final String MEDICAL_RECORD_DELETE        = "medical-record/{id}";
     public static final String MEDICAL_RECORD_FIELD_UPDATE  = "medical-record/field/update";
+
+    // Audit Log
+    public static final String AUDIT_LOG_LIST               = "audit-logs";
+    public static final String AUDIT_LOG_DETAIL             = "audit-logs/{id}";
+    public static final String AUDIT_LOG_BY_RECORD          = "medical-record/{id}/audit-logs";
+
+    // Dashboard
+    public static final String DASHBOARD_OVERVIEW           = "dashboard/overview";
+    public static final String DASHBOARD_RECORDS_BY_STATUS  = "dashboard/records-by-status";
+    public static final String DASHBOARD_RECORDS_BY_DEPT    = "dashboard/records-by-department";
+    public static final String DASHBOARD_USER_PERFORMANCE   = "dashboard/user-performance";
 }

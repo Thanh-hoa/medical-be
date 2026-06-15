@@ -24,7 +24,8 @@ public class MenuPermissionService implements IMenuPermissionService {
             new MenuDef(2L, "accounts",                 "Account Management",         "/accounts"),
             new MenuDef(3L, "medical-records",          "Medical Records",            "/medical-records"),
             new MenuDef(4L, "medical-records-approval", "Medical Records Approval",   "/medical-records-approval"),
-            new MenuDef(5L, "patient-search",           "Patient Management",         "/patient-search")
+            new MenuDef(5L, "patient-search",           "Patient Management",         "/patient-search"),
+            new MenuDef(6L, "audit-logs",               "Audit Logs",                 "/audit-logs")
     );
 
     private final PermissionRoleRepository permissionRoleRepository;

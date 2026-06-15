@@ -41,7 +41,6 @@ public class Patient {
     @Column(name = "dob")
     LocalDate dob;
 
-    // male / female / other
     @Column(name = "gender", length = 10)
     String gender;
 

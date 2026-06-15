@@ -74,9 +74,15 @@ public class PermissionSeeder implements ISeeder {
                         .isHidden(false)
                         .build(),
                 Permission.builder()
+                        .slug(AdminConstant.AUDIT_LOGS)
+                        .name("Nhật ký Hệ thống")
+                        .sort("5")
+                        .isHidden(false)
+                        .build(),
+                Permission.builder()
                         .slug(AdminConstant.DASHBOARD)
                         .name("Thống kê")
-                        .sort("5")
+                        .sort("6")
                         .isHidden(false)
                         .build()
         );

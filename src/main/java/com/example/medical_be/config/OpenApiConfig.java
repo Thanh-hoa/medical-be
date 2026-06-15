@@ -110,4 +110,20 @@ public class OpenApiConfig {
                 .pathsToMatch(APIRoutes.API_V1 + "/config/**")
                 .build();
     }
+   @Bean
+    GroupedOpenApi group07AuditLogs() {
+        return GroupedOpenApi.builder()
+                .group("07-audit-logs")
+                .displayName("07. Audit Logs APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/audit-logs/**")
+                .build();
+    }
+    @Bean
+    GroupedOpenApi group08Dashboard() {
+        return GroupedOpenApi.builder()
+                .group("08-dashboard")
+                .displayName("08. Dashboard APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/dashboard/**")
+                .build();
+    }
 }
