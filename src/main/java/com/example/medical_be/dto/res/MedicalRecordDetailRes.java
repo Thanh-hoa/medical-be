@@ -33,6 +33,9 @@ public class MedicalRecordDetailRes {
     LocalDateTime verifiedAt;
     Long approvedBy;
     LocalDateTime approvedAt;
+    Long rejectedBy;
+    LocalDateTime rejectedAt;
+    String rejectionReason;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 

@@ -53,11 +53,15 @@ public class PermissionRoleSeeder implements ISeeder {
 
         grant(admin, MedicalRecordConstant.MEDICAL_RECORD_APPROVAL,
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
-                PermissionConstant.CANCEL_PERMISSION);
+                PermissionConstant.CANCEL_PERMISSION , PermissionConstant.EDIT_PERMISSION, 
+                PermissionConstant.DELETE_PERMISSION);
 
         grant(admin, MedicalRecordConstant.PATIENT_SEARCH,
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.EDIT_PERMISSION, PermissionConstant.DELETE_PERMISSION);
+
+        grant(admin, AdminConstant.AUDIT_LOGS,
+                PermissionConstant.VIEW_PERMISSION);
 
         grant(admin, AdminConstant.DASHBOARD,
                 PermissionConstant.VIEW_PERMISSION);
@@ -73,9 +77,6 @@ public class PermissionRoleSeeder implements ISeeder {
         grant(doctor, MedicalRecordConstant.MEDICAL_RECORD_APPROVAL,
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.CANCEL_PERMISSION);
-
-        grant(doctor, AdminConstant.DASHBOARD,
-                PermissionConstant.VIEW_PERMISSION);
     }
 
     // ── EMPLOYEE: upload + OCR review ──────────────────────────────────

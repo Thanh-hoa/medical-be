@@ -15,15 +15,21 @@ import com.example.medical_be.dto.json.LabResultJson;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 @Entity
@@ -45,6 +51,16 @@ public class MedicalRecord {
     @Column(name = "uploaded_by", nullable = false)
     Long uploadedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "uploaded_by",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_medical_records_uploaded_by"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Account uploader;
+
     @Column(name = "file_name")
     String fileName;
 
@@ -56,6 +72,16 @@ public class MedicalRecord {
 
     @Column(name = "patient_id")
     Long patientId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "patient_id",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_medical_records_patient"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Patient patient;
 
     @Column(name = "department", length = 100)
     String department;
@@ -74,12 +100,32 @@ public class MedicalRecord {
     @Column(name = "approved_by")
     Long approvedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "approved_by",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_medical_records_approved_by"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Account approver;
+
     @Column(name = "approved_at")
     LocalDateTime approvedAt;
 
 
     @Column(name = "verified_by")
     Long verifiedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "verified_by",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_medical_records_verified_by"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Account verifier;
 
     @Column(name = "verified_at")
     LocalDateTime verifiedAt;
@@ -95,6 +141,25 @@ public class MedicalRecord {
     @Column(name = "lab_data", columnDefinition = "jsonb")
     @Builder.Default
     List<LabResultJson> labData = new ArrayList<>();
+
+    @Column(name = "rejected_by")
+    Long rejectedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "rejected_by",
+            insertable = false,
+            updatable = false,
+            foreignKey = @ForeignKey(name = "fk_medical_records_rejected_by"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    Account rejecter;
+
+    @Column(name = "rejected_at")
+    LocalDateTime rejectedAt;
+
+    @Column(name = "rejection_reason", columnDefinition = "text")
+    String rejectionReason;
 
     @Column(name = "is_delete")
     @Builder.Default
