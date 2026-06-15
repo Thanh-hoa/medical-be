@@ -44,7 +44,11 @@ public class AuditLogService {
                     String oldValue, String newValue) {
         Long actorId = null;
         try { actorId = accountSupport.getCurrentAccountId(); } catch (Exception ignored) {}
+        log(action, resourceType, resourceId, oldValue, newValue, actorId);
+    }
 
+    public void log(String action, String resourceType, Long resourceId,
+                    String oldValue, String newValue, Long actorId) {
         AuditLog entry = AuditLog.builder()
                 .actorId(actorId)
                 .action(action)

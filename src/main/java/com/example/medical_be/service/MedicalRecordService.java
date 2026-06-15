@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,12 @@ import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
 import com.example.medical_be.entity.MedicalRecord;
 import com.example.medical_be.entity.MedicalRecordStatus;
+import com.example.medical_be.event.MedicalRecordUploadedEvent;
+import com.example.medical_be.event.MedicalRecordSubmittedEvent;
+import com.example.medical_be.event.MedicalRecordApprovedEvent;
+import com.example.medical_be.event.MedicalRecordRejectedEvent;
+import com.example.medical_be.event.MedicalRecordResubmittedEvent;
+import com.example.medical_be.event.MedicalRecordDeletedEvent;
 import com.example.medical_be.exception.ApplicationException;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.mapper.MedicalRecordMapper;
@@ -63,7 +70,8 @@ public class MedicalRecordService implements IMedicalRecordService {
     final AccountSupport accountSupport;
     final IMessageTranslator messageTranslator;
     final MedicalRecordMapper medicalRecordMapper;
-    final AuditLogService auditLogService;
+    final ApplicationEventPublisher eventPublisher;
+    final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -108,9 +116,11 @@ public class MedicalRecordService implements IMedicalRecordService {
             }
         }
 
-        MedicalRecordDetailRes result = medicalRecordMapper.toDetail(medicalRecordRepository.save(record));
-        auditLogService.log(AuditLogService.ACTION_UPLOAD, AuditLogService.RESOURCE_MEDICAL_RECORD,
-                result.getId(), null, "{\"status\":\"Extracted\"}");
+        record = medicalRecordRepository.save(record);
+        MedicalRecordDetailRes result = medicalRecordMapper.toDetail(record);
+        eventPublisher.publishEvent(
+                new MedicalRecordUploadedEvent(this, record, accountSupport.getCurrentAccountId())
+        );
         return result;
     }
 
@@ -196,10 +206,11 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setStatus(MedicalRecordStatus.PENDING_DOCTOR_REVIEW);
         record.setVerifiedBy(accountSupport.getCurrentAccountId());
         record.setVerifiedAt(LocalDateTime.now());
-        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
-        auditLogService.log(AuditLogService.ACTION_SUBMIT, AuditLogService.RESOURCE_MEDICAL_RECORD,
-                id, "{\"status\":\"Extracted\"}", "{\"status\":\"Pending Doctor Review\"}");
-        return result;
+        record = medicalRecordRepository.save(record);
+        eventPublisher.publishEvent(
+                new MedicalRecordSubmittedEvent(this, record, accountSupport.getCurrentAccountId())
+        );
+        return medicalRecordMapper.toSummary(record);
     }
 
     @Override
@@ -215,10 +226,12 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setStatus(MedicalRecordStatus.APPROVED);
         record.setApprovedBy(accountSupport.getCurrentAccountId());
         record.setApprovedAt(LocalDateTime.now());
-        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
-        auditLogService.log(AuditLogService.ACTION_APPROVE, AuditLogService.RESOURCE_MEDICAL_RECORD,
-                id, "{\"status\":\"Pending Doctor Review\"}", "{\"status\":\"Approved\"}");
-        return result;
+        record = medicalRecordRepository.save(record);
+        notificationService.markResourceAsReadForCurrentUser("MedicalRecord", record.getId());
+        eventPublisher.publishEvent(
+                new MedicalRecordApprovedEvent(this, record, accountSupport.getCurrentAccountId())
+        );
+        return medicalRecordMapper.toSummary(record);
     }
 
     @Override
@@ -235,11 +248,12 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setRejectedBy(accountSupport.getCurrentAccountId());
         record.setRejectedAt(LocalDateTime.now());
         record.setRejectionReason(req.rejectionReason());
-        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
-        auditLogService.log(AuditLogService.ACTION_REJECT, AuditLogService.RESOURCE_MEDICAL_RECORD,
-                req.id(), "{\"status\":\"Pending Doctor Review\"}",
-                "{\"status\":\"Rejected\",\"reason\":\"" + req.rejectionReason().replace("\"", "'") + "\"}");
-        return result;
+        record = medicalRecordRepository.save(record);
+        notificationService.markResourceAsReadForCurrentUser("MedicalRecord", record.getId());
+        eventPublisher.publishEvent(
+                new MedicalRecordRejectedEvent(this, record, accountSupport.getCurrentAccountId(), req.rejectionReason())
+        );
+        return medicalRecordMapper.toSummary(record);
     }
 
     @Override
@@ -258,10 +272,12 @@ public class MedicalRecordService implements IMedicalRecordService {
         record.setRejectionReason(null);
         record.setVerifiedBy(accountSupport.getCurrentAccountId());
         record.setVerifiedAt(LocalDateTime.now());
-        MedicalRecordSummaryRes result = medicalRecordMapper.toSummary(medicalRecordRepository.save(record));
-        auditLogService.log(AuditLogService.ACTION_RESUBMIT, AuditLogService.RESOURCE_MEDICAL_RECORD,
-                id, "{\"status\":\"Rejected\"}", "{\"status\":\"Pending Doctor Review\"}");
-        return result;
+        record = medicalRecordRepository.save(record);
+        notificationService.markResourceAsReadForCurrentUser("MedicalRecord", record.getId());
+        eventPublisher.publishEvent(
+                new MedicalRecordResubmittedEvent(this, record, accountSupport.getCurrentAccountId())
+        );
+        return medicalRecordMapper.toSummary(record);
     }
 
     @Override
@@ -273,9 +289,10 @@ public class MedicalRecordService implements IMedicalRecordService {
         MedicalRecord record = findById(id);
         record.setIsDelete(true);
         record.setDeletedAt(LocalDateTime.now());
-        medicalRecordRepository.save(record);
-        auditLogService.log(AuditLogService.ACTION_DELETE, AuditLogService.RESOURCE_MEDICAL_RECORD,
-                id, "{\"status\":\"" + record.getStatus().getDbValue() + "\"}", null);
+        record = medicalRecordRepository.save(record);
+        eventPublisher.publishEvent(
+                new MedicalRecordDeletedEvent(this, record, accountSupport.getCurrentAccountId())
+        );
     }
 
     private MedicalRecord findById(Long id) {
