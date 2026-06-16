@@ -6,11 +6,14 @@ public class APIRoutes {
     public static final String LOGIN =   "auth/login";
     public static final String LOGOUT =   "auth/logout";
     public static final String REFRESH_TOKEN =   "auth/refresh-token";
+    public static final String FORGOT_PASSWORD = "auth/forgot-password";
+    public static final String RESET_PASSWORD =  "auth/reset-password";
 
     public static final String REGISTER =   "account/register";
     public static final String CREATE_ACCOUNT =   "account/create";
     public static final String VALIDATE_TOKEN =  "account/validate-token";
     public static final String PROFILE =  "account/profile";
+    public static final String CHANGE_PASSWORD = "account/change-password";
     public static final String DETAIL_ACCOUNT = "account/{id}";
     public static final String UPDATE_ACCOUNT = "account/update";
     public static final String LIST_ACCOUNT = "account/list";

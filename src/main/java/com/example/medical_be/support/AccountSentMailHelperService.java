@@ -65,7 +65,22 @@ public class AccountSentMailHelperService {
                 });
     }
 
-     private Map<String, Object> variablesEmailActiveAccount(Account account, String activationToken) {
+    public void sendPasswordResetEmail(Account account, String resetToken) {
+        try {
+            Map<String, Object> templateVariables = new HashMap<>();
+            templateVariables.put("name", account.getName() != null && !account.getName().isEmpty()
+                    ? account.getName()
+                    : account.getEmail());
+            templateVariables.put("resetLink", frontendUrl + "/reset-password?token=" + resetToken);
+
+            String subject = messageTranslator.getMessage("mail.reset_password.subject");
+            sendEmailAsync(account, subject, templateVariables, "reset-password");
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to {}", account.getEmail(), e);
+        }
+    }
+
+    private Map<String, Object> variablesEmailActiveAccount(Account account, String activationToken) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("name", account.getName() != null && !account.getName().isEmpty()
                 ? account.getName()

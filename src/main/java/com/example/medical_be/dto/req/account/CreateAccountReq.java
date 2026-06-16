@@ -14,14 +14,19 @@ import jakarta.validation.constraints.Pattern;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public record CreateAccountReq (
                 @NotBlank(message = "{account.name.require}") String name,
-                @Pattern(regexp = "^\\d{2}/\\d{2}/\\d{4}$", message = "{account.birthday.invalid_format}") String birthday,
+                @Pattern(regexp = "^\\d{2}/\\d{2}/\\d{4}$", message = "{account.birthday.invalid_format}") 
+                String birthday,
 
-                @NotBlank(message = "{account.email.require}") @Email(message = "{account.email.invalid}") String email,
+                @NotBlank(message = "{account.email.require}") @Email(message = "{account.email.invalid}") 
+                String email,
 
-                @Pattern(regexp = "male|female|other", message = "{account.gender.invalid}") String gender,
+                @Pattern(regexp = "male|female|other", message = "{account.gender.invalid}")
+                String gender,
 
-                @NotBlank(message = "{account.phone.require}") String phoneNumber,
+                @NotBlank(message = "{account.phone.require}") 
+                String phoneNumber,
 
-                @NotEmpty(message = "{account.roles.require}") List<Long> roles,
+                @NotEmpty(message = "{account.roles.require}") 
+                List<Long> roles,
                 String photo 
     ){ }

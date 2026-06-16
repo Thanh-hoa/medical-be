@@ -2,6 +2,7 @@ package com.example.medical_be.service;
 
 
 import com.example.medical_be.dto.req.account.AccountListReq;
+import com.example.medical_be.dto.req.account.ChangePasswordReq;
 import com.example.medical_be.dto.req.account.CreateAccountReq;
 import com.example.medical_be.dto.req.account.DeleteAccountReq;
 import com.example.medical_be.dto.req.account.RegisterAccountReq;
@@ -346,6 +347,18 @@ public class AccountService implements IAccountService {
     }
     
     @Override
+    @Transactional
+    public void changePassword(ChangePasswordReq req) {
+        commonAccountValidate.validatePasswordMatch(req.newPassword(), req.repeatNewPassword());
+        Account account = commonAccountValidate.validateAccountExist(currentAccountProvider.getCurrentAccountId());
+        if (!passwordEncoder.matches(req.currentPassword(), account.getPassword())) {
+            throw new ApplicationException(messageTranslator.getMessage("account.password_incorrect"));
+        }
+        account.setPassword(passwordEncoder.encode(req.newPassword()));
+        accountRepository.save(account);
+    }
+
+    @Override
     public void activeAccount(String token) {
         String email  = activeAccountValidate.validateToken(token);
         Account account = accountRepository.findByEmail(email).orElseThrow(
@@ -357,5 +370,4 @@ public class AccountService implements IAccountService {
         account.setEmailVerifyAt(LocalDateTime.now());
         accountRepository.save(account);
     }
-    
 }
