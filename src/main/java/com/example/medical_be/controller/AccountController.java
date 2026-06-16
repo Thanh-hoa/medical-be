@@ -1,6 +1,7 @@
 package com.example.medical_be.controller;
 import com.example.medical_be.dto.JSONResponse;
 import com.example.medical_be.dto.req.account.AccountListReq;
+import com.example.medical_be.dto.req.account.ChangePasswordReq;
 import com.example.medical_be.dto.req.account.CreateAccountReq;
 import com.example.medical_be.dto.req.account.DeleteAccountReq;
 import com.example.medical_be.dto.req.account.RegisterAccountReq;
@@ -129,6 +130,17 @@ public class AccountController {
                         .isError(false)
                         .message(iMessageTranslator.getMessage("account.get_profile_success"))
                         .data(accountService.getMyPermissions())
+                        .build());
+    }
+
+    @Operation(summary = "Change password", description = "Đổi mật khẩu của tài khoản đang đăng nhập")
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping(APIRoutes.CHANGE_PASSWORD)
+    public ResponseEntity<JSONResponse<?>> changePassword(@Valid @RequestBody ChangePasswordReq req) {
+        accountService.changePassword(req);
+        return ResponseEntity.ok(JSONResponse.<Void>builder()
+                        .isError(false)
+                        .message(iMessageTranslator.getMessage("account.change_password_success"))
                         .build());
     }
 

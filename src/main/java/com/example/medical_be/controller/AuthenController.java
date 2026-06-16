@@ -3,6 +3,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.medical_be.dto.JSONResponse;
+import com.example.medical_be.dto.req.account.ForgotPasswordReq;
+import com.example.medical_be.dto.req.account.ResetPasswordReq;
 import com.example.medical_be.dto.req.auth.LoginReq;
 import com.example.medical_be.dto.req.auth.RefreshTokenReq;
 import com.example.medical_be.dto.res.InfoLoginRes;
@@ -21,6 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -74,6 +77,26 @@ public class AuthenController {
                         .isError(false)
                         .message(messageTranslator.getMessage("logout.successful"))
                         .data(authService.logout(token))
+                        .build());
+    }
+
+    @Operation(summary = "Forgot password", description = "Gửi email chứa link đặt lại mật khẩu (link hết hạn sau 15 phút)")
+    @PostMapping(APIRoutes.FORGOT_PASSWORD)
+    public ResponseEntity<JSONResponse<?>> forgotPassword(@Valid @RequestBody ForgotPasswordReq req) {
+        authService.forgotPassword(req);
+        return ResponseEntity.ok(JSONResponse.<Void>builder()
+                        .isError(false)
+                        .message(messageTranslator.getMessage("account.forgot_password_success"))
+                        .build());
+    }
+
+    @Operation(summary = "Reset password", description = "Đặt lại mật khẩu mới bằng token nhận từ email")
+    @PostMapping(APIRoutes.RESET_PASSWORD)
+    public ResponseEntity<JSONResponse<?>> resetPassword(@Valid @RequestBody ResetPasswordReq req) {
+        authService.resetPassword(req);
+        return ResponseEntity.ok(JSONResponse.<Void>builder()
+                        .isError(false)
+                        .message(messageTranslator.getMessage("account.reset_password_success"))
                         .build());
     }
 
