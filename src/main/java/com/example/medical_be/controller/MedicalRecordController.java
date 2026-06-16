@@ -27,6 +27,7 @@ import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.routes.APIRoutes;
 import com.example.medical_be.service.IMedicalRecordService;
+import com.example.medical_be.service.NotificationService;
 import com.example.medical_be.swagger.GroupAPIConstant;
 import com.example.medical_be.swagger.MedicalRecordApiExamples;
 
@@ -46,6 +47,7 @@ import lombok.RequiredArgsConstructor;
 public class MedicalRecordController {
 
     private final IMedicalRecordService medicalRecordService;
+    private final NotificationService notificationService;
     private final IMessageTranslator messageTranslator;
 
 
@@ -106,10 +108,12 @@ public class MedicalRecordController {
     @PreAuthorize("hasAuthority('medical-records:view')")
     @GetMapping(APIRoutes.MEDICAL_RECORD_DETAIL)
     public ResponseEntity<JSONResponse<?>> detail(@PathVariable Long id) {
+        MedicalRecordDetailRes detail = medicalRecordService.detail(id);
+        notificationService.markResourceAsReadForCurrentUser("MedicalRecord", id);
         return ResponseEntity.ok(JSONResponse.<MedicalRecordDetailRes>builder()
                 .isError(false)
                 .message(messageTranslator.getMessage("record.detail_success"))
-                .data(medicalRecordService.detail(id))
+                .data(detail)
                 .build());
     }
 

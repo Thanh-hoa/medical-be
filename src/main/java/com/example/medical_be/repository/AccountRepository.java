@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -45,4 +46,7 @@ public interface AccountRepository extends JpaRepository<Account , Long> {
                 @Param("excludeAccountId") Long excludeAccountId,
                 @Param("search") String search,
                 Pageable pageable);
+
+    @Query("SELECT DISTINCT a FROM Account a LEFT JOIN a.rfAccountRoles r LEFT JOIN r.role role WHERE LOWER(role.name) = LOWER(:roleName) AND a.isActive = true AND a.isDelete = false")
+    List<Account> findByRole(@Param("roleName") String roleName);
 }

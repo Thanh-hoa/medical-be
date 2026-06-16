@@ -53,4 +53,20 @@ public class APIRoutes {
     public static final String DASHBOARD_RECORDS_BY_STATUS  = "dashboard/records-by-status";
     public static final String DASHBOARD_RECORDS_BY_DEPT    = "dashboard/records-by-department";
     public static final String DASHBOARD_USER_PERFORMANCE   = "dashboard/user-performance";
+
+    // Notification
+    public static final String NOTIFICATION_ROUTE           = "notifications";
+    public static final String NOTIFICATION_LIST            = "notifications";
+    public static final String NOTIFICATION_UNREAD_COUNT    = "notifications/unread-count";
+    public static final String NOTIFICATION_MARK_READ       = "notifications/{id}/read";
+    public static final String NOTIFICATION_MARK_ALL_READ   = "notifications/read-all";
+    public static final String NOTIFICATION_DELETE          = "notifications/{id}";
+
+    // Webhook (Admin only)
+    public static final String WEBHOOK_ROUTE               = "admin/webhooks";
+    public static final String WEBHOOK_LIST                = "admin/webhooks";
+    public static final String WEBHOOK_CREATE              = "admin/webhooks";
+    public static final String WEBHOOK_DETAIL              = "admin/webhooks/{id}";
+    public static final String WEBHOOK_UPDATE              = "admin/webhooks/{id}";
+    public static final String WEBHOOK_DELETE              = "admin/webhooks/{id}";
 }
