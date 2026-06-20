@@ -1,5 +1,11 @@
 package com.example.medical_be.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -70,11 +76,15 @@ public class AuditLogService {
 
     @Transactional(readOnly = true)
     public PagedResponse<AuditLogRes> list(String resourceType, Long actorId,
-                                           String action, Integer page, Integer limit) {
+                                           String action, String period, String date,
+                                           String fromDate, String toDate,
+                                           Integer page, Integer limit) {
         int p = PaginationUtils.normalizePage(page, messageTranslator);
         int l = PaginationUtils.normalizeLimit(limit, messageTranslator);
         Pageable pageable = PageRequest.of(p, l);
-        Page<AuditLog> pageRes = auditLogRepository.findAll(resourceType, actorId, action, pageable);
+        DateRange range = resolveDateRange(period, date, fromDate, toDate);
+        Page<AuditLog> pageRes = auditLogRepository.findAll(
+                resourceType, actorId, action, range.fromDateTime(), range.toDateTime(), pageable);
         return PaginationUtils.buildPagedResponse(
                 pageRes.getContent().stream().map(this::toRes).toList(),
                 pageRes, page, l);
@@ -88,11 +98,15 @@ public class AuditLogService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<AuditLogRes> listByRecord(Long recordId, Integer page, Integer limit) {
+    public PagedResponse<AuditLogRes> listByRecord(Long recordId, String period, String date,
+                                                   String fromDate, String toDate,
+                                                   Integer page, Integer limit) {
         int p = PaginationUtils.normalizePage(page, messageTranslator);
         int l = PaginationUtils.normalizeLimit(limit, messageTranslator);
         Pageable pageable = PageRequest.of(p, l);
-        Page<AuditLog> pageRes = auditLogRepository.findByResource(RESOURCE_MEDICAL_RECORD, recordId, pageable);
+        DateRange range = resolveDateRange(period, date, fromDate, toDate);
+        Page<AuditLog> pageRes = auditLogRepository.findByResource(
+                RESOURCE_MEDICAL_RECORD, recordId, range.fromDateTime(), range.toDateTime(), pageable);
         return PaginationUtils.buildPagedResponse(
                 pageRes.getContent().stream().map(this::toRes).toList(),
                 pageRes, page, l);
@@ -134,6 +148,55 @@ public class AuditLogService {
         };
     }
 
+    private DateRange resolveDateRange(String period, String date, String fromDate, String toDate) {
+        if (period != null && !period.isBlank()) {
+            LocalDate baseDate = parseDateOrToday(date);
+            return switch (period.toLowerCase()) {
+                case "day", "date", "today" -> new DateRange(baseDate.atStartOfDay(), baseDate.plusDays(1).atStartOfDay());
+                case "week" -> {
+                    LocalDate start = baseDate.with(DayOfWeek.MONDAY);
+                    yield new DateRange(start.atStartOfDay(), start.plusWeeks(1).atStartOfDay());
+                }
+                case "month" -> {
+                    LocalDate start = baseDate.withDayOfMonth(1);
+                    yield new DateRange(start.atStartOfDay(), start.plusMonths(1).atStartOfDay());
+                }
+                case "year" -> {
+                    LocalDate start = baseDate.withDayOfYear(1);
+                    yield new DateRange(start.atStartOfDay(), start.plusYears(1).atStartOfDay());
+                }
+                default -> throw new ApplicationException(messageTranslator.getMessage("audit_log.period.invalid"));
+            };
+        }
+
+        LocalDateTime fromDateTime = parseDateOrNull(fromDate, "audit_log.from_date.invalid")
+                .map(LocalDate::atStartOfDay)
+                .orElse(null);
+        LocalDateTime toDateTime = parseDateOrNull(toDate, "audit_log.to_date.invalid")
+                .map(d -> d.plusDays(1).atStartOfDay())
+                .orElse(null);
+
+        if (fromDateTime != null && toDateTime != null && !fromDateTime.isBefore(toDateTime)) {
+            throw new ApplicationException(messageTranslator.getMessage("audit_log.date_range.invalid"));
+        }
+        return new DateRange(fromDateTime, toDateTime);
+    }
+
+    private LocalDate parseDateOrToday(String value) {
+        return parseDateOrNull(value, "audit_log.date.invalid").orElse(LocalDate.now());
+    }
+
+    private Optional<LocalDate> parseDateOrNull(String value, String messageKey) {
+        if (value == null || value.isBlank()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(LocalDate.parse(value));
+        } catch (DateTimeParseException e) {
+            throw new ApplicationException(messageTranslator.getMessage(messageKey));
+        }
+    }
+
     private String getClientIp() {
         try {
             var attrs = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -152,5 +215,8 @@ public class AuditLogService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private record DateRange(LocalDateTime fromDateTime, LocalDateTime toDateTime) {
     }
 }

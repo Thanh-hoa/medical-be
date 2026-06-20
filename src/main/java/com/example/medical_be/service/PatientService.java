@@ -3,7 +3,10 @@ package com.example.medical_be.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,8 +50,7 @@ public class PatientService implements IPatientService {
     @Override
     @Transactional(readOnly = true)
     public MedicalRecordSummaryPatient findByBhyt(String search) {
-        Patient patient = patientRepository.findByBhyt(search)
-                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("patient.not_found")));
+        Patient patient = findPatientByBhyt(search);
 
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<MedicalRecord> recordPage =
@@ -70,20 +72,35 @@ public class PatientService implements IPatientService {
     public PagedResponse<PatientRes> search(PatientSearchReq req) {
         int page = PaginationUtils.normalizePage(req.page(), messageTranslator);
         int limit = PaginationUtils.normalizeLimit(req.limit(), messageTranslator);
-        Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.ASC, "name"));
 
-        Page<Patient> pageRes = patientRepository.search(req.q(), pageable);
-        List<PatientRes> items = pageRes.getContent().stream().map(patientMapper::toRes).toList();
+        List<PatientRes> filtered = patientRepository.findAll().stream()
+                .filter(patient -> matchesSearch(patient, req.q()))
+                .sorted(Comparator.comparing(
+                        Patient::getName,
+                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .map(patientMapper::toRes)
+                .toList();
 
-        return PaginationUtils.buildPagedResponse(items, pageRes, req.page(), limit);
+        int from = Math.min(page * limit, filtered.size());
+        int to = Math.min(from + limit, filtered.size());
+        List<PatientRes> items = filtered.subList(from, to);
+
+        return PagedResponse.<PatientRes>builder()
+                .items(items)
+                .currentPage(req.page())
+                .limit(limit)
+                .totalItems((long) filtered.size())
+                .totalPage((int) Math.ceil((double) filtered.size() / limit))
+                .build();
     }
 
     @Override
     @Transactional
     public PatientRes findOrCreate(CreatePatientReq req) {
-        return patientRepository.findByBhyt(req.bhyt())
-                .map(patientMapper::toRes)
-                .orElseGet(() -> patientMapper.toRes(patientRepository.save(buildPatient(req))));
+        Patient existingPatient = findPatientByBhytOrNull(req.bhyt());
+        return existingPatient != null
+                ? patientMapper.toRes(existingPatient)
+                : patientMapper.toRes(patientRepository.save(buildPatient(req)));
     }
 
     @Override
@@ -92,7 +109,7 @@ public class PatientService implements IPatientService {
         Patient patient = patientRepository.findById(req.id())
                 .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("patient.not_found")));
 
-        if (!patient.getBhyt().equals(req.bhyt()) && patientRepository.existsByBhyt(req.bhyt())) {
+        if (!Objects.equals(patient.getBhyt(), req.bhyt()) && existsByBhyt(req.bhyt())) {
             throw new ApplicationException(messageTranslator.getMessage("patient.bhyt.already_exists"));
         }
 
@@ -124,6 +141,40 @@ public class PatientService implements IPatientService {
         } catch (DateTimeParseException e) {
             throw new ApplicationException(messageTranslator.getMessage("patient.dob.invalid_format"));
         }
+    }
+
+    private Patient findPatientByBhyt(String bhyt) {
+        Patient patient = findPatientByBhytOrNull(bhyt);
+        if (patient == null) {
+            throw new ApplicationException(messageTranslator.getMessage("patient.not_found"));
+        }
+        return patient;
+    }
+
+    private Patient findPatientByBhytOrNull(String bhyt) {
+        if (bhyt == null || bhyt.isBlank()) {
+            return null;
+        }
+        return patientRepository.findAll().stream()
+                .filter(patient -> bhyt.equals(patient.getBhyt()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private boolean existsByBhyt(String bhyt) {
+        return findPatientByBhytOrNull(bhyt) != null;
+    }
+
+    private boolean matchesSearch(Patient patient, String q) {
+        if (q == null || q.isBlank()) {
+            return true;
+        }
+        String keyword = q.toLowerCase(Locale.ROOT);
+        return containsIgnoreCase(patient.getName(), keyword) || containsIgnoreCase(patient.getBhyt(), keyword);
+    }
+
+    private boolean containsIgnoreCase(String value, String keyword) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(keyword);
     }
 
 

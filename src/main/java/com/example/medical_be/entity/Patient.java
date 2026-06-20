@@ -6,7 +6,11 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.example.medical_be.converter.EncryptedLocalDateConverter;
+import com.example.medical_be.converter.EncryptedStringConverter;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -32,22 +36,27 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(name = "bhyt", length = 30, unique = true, nullable = false)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "bhyt", length = 500, unique = true, nullable = false)
     String bhyt;
 
-    @Column(name = "name", length = 200, nullable = false)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "name", length = 500, nullable = false)
     String name;
 
-    @Column(name = "dob")
+    @Convert(converter = EncryptedLocalDateConverter.class)
+    @Column(name = "dob", length = 500)
     LocalDate dob;
 
     @Column(name = "gender", length = 10)
     String gender;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "address", columnDefinition = "text")
     String address;
 
-    @Column(name = "phone", length = 20)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "phone", length = 500)
     String phone;
 
     @CreationTimestamp

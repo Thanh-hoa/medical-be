@@ -9,10 +9,11 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
+import com.example.medical_be.converter.EncryptedStringConverter;
 import com.example.medical_be.dto.json.ExtractedDataDto;
+import com.example.medical_be.dto.json.LabResultJson;
 import com.example.medical_be.entity.enums.MedicalRecordStatus;
 import com.example.medical_be.entity.enums.MedicalRecordStatusConverter;
-import com.example.medical_be.dto.json.LabResultJson;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -96,6 +97,7 @@ public class MedicalRecord {
     @Builder.Default
     MedicalRecordStatus status = MedicalRecordStatus.PROCESSING;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "notes", columnDefinition = "text")
     String notes;
 
@@ -160,6 +162,7 @@ public class MedicalRecord {
     @Column(name = "rejected_at")
     LocalDateTime rejectedAt;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "rejection_reason", columnDefinition = "text")
     String rejectionReason;
 

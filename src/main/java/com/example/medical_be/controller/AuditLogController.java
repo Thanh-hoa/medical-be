@@ -36,12 +36,16 @@ public class AuditLogController {
             @RequestParam(required = false) String resourceType,
             @RequestParam(required = false) Long actorId,
             @RequestParam(required = false) String action,
+            @RequestParam(required = false) String period,
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer limit) {
         return ResponseEntity.ok(JSONResponse.<PagedResponse<AuditLogRes>>builder()
                 .isError(false)
                 .message(messageTranslator.getMessage("audit_log.list_success"))
-                .data(auditLogService.list(resourceType, actorId, action, page, limit))
+                .data(auditLogService.list(resourceType, actorId, action, period, date, fromDate, toDate, page, limit))
                 .build());
     }
 
@@ -61,12 +65,16 @@ public class AuditLogController {
     @GetMapping(APIRoutes.AUDIT_LOG_BY_RECORD)
     public ResponseEntity<JSONResponse<?>> listByRecord(
             @PathVariable Long id,
+            @RequestParam(required = false) String period,
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer limit) {
         return ResponseEntity.ok(JSONResponse.<PagedResponse<AuditLogRes>>builder()
                 .isError(false)
                 .message(messageTranslator.getMessage("audit_log.list_success"))
-                .data(auditLogService.listByRecord(id, page, limit))
+                .data(auditLogService.listByRecord(id, period, date, fromDate, toDate, page, limit))
                 .build());
     }
 }
