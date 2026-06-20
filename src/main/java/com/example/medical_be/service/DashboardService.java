@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.medical_be.dto.res.DashboardOverviewRes;
 import com.example.medical_be.dto.res.DashboardStatItemRes;
 import com.example.medical_be.dto.res.DashboardUserPerformanceRes;
-import com.example.medical_be.entity.MedicalRecordStatus;
+import com.example.medical_be.entity.enums.MedicalRecordStatus;
 import com.example.medical_be.repository.AccountRepository;
 import com.example.medical_be.repository.MedicalRecordRepository;
 import com.example.medical_be.repository.PatientRepository;

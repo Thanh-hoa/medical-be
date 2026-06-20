@@ -11,7 +11,7 @@ import com.example.medical_be.dto.req.account.UpdateProfileReq;
 import com.example.medical_be.dto.res.InfoAccountRes;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.entity.Account;
-import com.example.medical_be.entity.Gender;
+import com.example.medical_be.entity.enums.Gender;
 import com.example.medical_be.entity.RfAccountRole;
 import com.example.medical_be.entity.Role;
 import com.example.medical_be.exception.ApplicationException;

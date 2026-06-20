@@ -8,4 +8,6 @@ public class GroupAPIConstant {
     public static final String MENU_PERMISSION = "06. Menu Permission";
     public static final String AUDIT_LOG       = "07. Audit Logs";
     public static final String DASHBOARD       = "08. Dashboard";
+    public static final String MEDICINE        = "09. Medicine Catalog";
+    public static final String PRESCRIPTION    = "10. Prescription";
 }

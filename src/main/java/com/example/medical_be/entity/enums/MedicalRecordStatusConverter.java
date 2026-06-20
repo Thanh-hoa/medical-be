@@ -1,4 +1,4 @@
-package com.example.medical_be.entity;
+package com.example.medical_be.entity.enums;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

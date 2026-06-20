@@ -27,6 +27,7 @@ import lombok.experimental.FieldDefaults;
 public class AuditLogService {
 
     public static final String RESOURCE_MEDICAL_RECORD = "MEDICAL_RECORD";
+    public static final String RESOURCE_PRESCRIPTION   = "PRESCRIPTION";
 
     public static final String ACTION_UPLOAD   = "UPLOAD";
     public static final String ACTION_UPDATE   = "UPDATE";
@@ -35,6 +36,11 @@ public class AuditLogService {
     public static final String ACTION_REJECT   = "REJECT";
     public static final String ACTION_RESUBMIT = "RESUBMIT";
     public static final String ACTION_DELETE   = "DELETE";
+
+    public static final String ACTION_PRESCRIPTION_CREATE     = "PRESCRIPTION_CREATE";
+    public static final String ACTION_PRESCRIPTION_SAVE_DRAFT = "PRESCRIPTION_SAVE_DRAFT";
+    public static final String ACTION_PRESCRIPTION_ISSUE      = "PRESCRIPTION_ISSUE";
+    public static final String ACTION_PRESCRIPTION_PRINT      = "PRESCRIPTION_PRINT";
 
     final AuditLogRepository auditLogRepository;
     final AccountSupport accountSupport;
@@ -119,8 +125,12 @@ public class AuditLogService {
             case ACTION_REJECT   -> "Từ chối bệnh án";
             case ACTION_RESUBMIT -> "Nộp lại sau từ chối";
             case ACTION_UPDATE   -> "Cập nhật bệnh án";
-            case ACTION_DELETE   -> "Xóa bệnh án";
-            default              -> action;
+            case ACTION_DELETE                   -> "Xóa bệnh án";
+            case ACTION_PRESCRIPTION_CREATE     -> "Tạo toa thuốc";
+            case ACTION_PRESCRIPTION_SAVE_DRAFT -> "Lưu nháp toa thuốc";
+            case ACTION_PRESCRIPTION_ISSUE      -> "Phát hành toa thuốc";
+            case ACTION_PRESCRIPTION_PRINT      -> "In toa thuốc";
+            default                             -> action;
         };
     }
 

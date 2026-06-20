@@ -6,6 +6,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.example.medical_be.event.MedicalRecordEvent;
+import com.example.medical_be.event.PrescriptionEvent;
 import com.example.medical_be.service.AuditLogService;
 
 @Slf4j
@@ -22,6 +23,23 @@ public class AuditLogEventListener {
                     event.getAction(),
                     AuditLogService.RESOURCE_MEDICAL_RECORD,
                     event.getRecord().getId(),
+                    event.getOldValue(),
+                    event.getNewValue(),
+                    event.getActorId()
+            );
+            log.info("Audit log created for action: {}", event.getAction());
+        } catch (Exception e) {
+            log.error("Failed to log audit event: {}", event.getAction(), e);
+        }
+    }
+
+    @EventListener
+    public void onPrescriptionEvent(PrescriptionEvent event) {
+        try {
+            auditLogService.log(
+                    event.getAction(),
+                    AuditLogService.RESOURCE_PRESCRIPTION,
+                    event.getPrescription().getId(),
                     event.getOldValue(),
                     event.getNewValue(),
                     event.getActorId()

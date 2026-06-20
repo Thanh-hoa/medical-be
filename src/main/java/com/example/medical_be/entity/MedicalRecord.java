@@ -10,6 +10,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import com.example.medical_be.dto.json.ExtractedDataDto;
+import com.example.medical_be.entity.enums.MedicalRecordStatus;
+import com.example.medical_be.entity.enums.MedicalRecordStatusConverter;
 import com.example.medical_be.dto.json.LabResultJson;
 
 import jakarta.persistence.Column;

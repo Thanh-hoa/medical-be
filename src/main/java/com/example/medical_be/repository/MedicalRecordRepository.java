@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.medical_be.entity.MedicalRecord;
-import com.example.medical_be.entity.MedicalRecordStatus;
+import com.example.medical_be.entity.enums.MedicalRecordStatus;
 
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {

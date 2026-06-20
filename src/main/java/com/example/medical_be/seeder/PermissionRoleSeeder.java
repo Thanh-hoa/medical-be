@@ -67,7 +67,7 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.VIEW_PERMISSION);
     }
 
-    // ── DOCTOR: approve/reject + view most modules ─────────────────────
+    // ── DOCTOR: approve/reject + prescribe + view patient/record ───────
     private void assignDoctorPermissions() {
         Role doctor = findRole(RoleConstant.ROLE_DOCTOR);
 
@@ -77,6 +77,13 @@ public class PermissionRoleSeeder implements ISeeder {
         grant(doctor, MedicalRecordConstant.MEDICAL_RECORD_APPROVAL,
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.CANCEL_PERMISSION);
+
+        // Bác sĩ cần xem thông tin bệnh nhân khi kê toa (tra cứu BHYT, địa chỉ, lịch sử)
+        grant(doctor, MedicalRecordConstant.PATIENT_SEARCH,
+                PermissionConstant.VIEW_PERMISSION);
+
+        grant(doctor, AdminConstant.DASHBOARD,
+                PermissionConstant.VIEW_PERMISSION);
     }
 
     // ── EMPLOYEE: upload + OCR review ──────────────────────────────────
