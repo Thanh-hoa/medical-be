@@ -4,11 +4,15 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -23,6 +27,7 @@ import com.example.medical_be.repository.AuditLogRepository;
 import com.example.medical_be.support.AccountSupport;
 import com.example.medical_be.support.PaginationUtils;
 
+import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -81,10 +86,11 @@ public class AuditLogService {
                                            Integer page, Integer limit) {
         int p = PaginationUtils.normalizePage(page, messageTranslator);
         int l = PaginationUtils.normalizeLimit(limit, messageTranslator);
-        Pageable pageable = PageRequest.of(p, l);
+        Pageable pageable = PageRequest.of(p, l, Sort.by(Sort.Direction.DESC, "createdAt"));
         DateRange range = resolveDateRange(period, date, fromDate, toDate);
         Page<AuditLog> pageRes = auditLogRepository.findAll(
-                resourceType, actorId, action, range.fromDateTime(), range.toDateTime(), pageable);
+                buildAuditLogSpecification(resourceType, actorId, action, null, null, range),
+                pageable);
         return PaginationUtils.buildPagedResponse(
                 pageRes.getContent().stream().map(this::toRes).toList(),
                 pageRes, page, l);
@@ -103,10 +109,11 @@ public class AuditLogService {
                                                    Integer page, Integer limit) {
         int p = PaginationUtils.normalizePage(page, messageTranslator);
         int l = PaginationUtils.normalizeLimit(limit, messageTranslator);
-        Pageable pageable = PageRequest.of(p, l);
+        Pageable pageable = PageRequest.of(p, l, Sort.by(Sort.Direction.DESC, "createdAt"));
         DateRange range = resolveDateRange(period, date, fromDate, toDate);
-        Page<AuditLog> pageRes = auditLogRepository.findByResource(
-                RESOURCE_MEDICAL_RECORD, recordId, range.fromDateTime(), range.toDateTime(), pageable);
+        Page<AuditLog> pageRes = auditLogRepository.findAll(
+                buildAuditLogSpecification(null, null, null, RESOURCE_MEDICAL_RECORD, recordId, range),
+                pageable);
         return PaginationUtils.buildPagedResponse(
                 pageRes.getContent().stream().map(this::toRes).toList(),
                 pageRes, page, l);
@@ -145,6 +152,36 @@ public class AuditLogService {
             case ACTION_PRESCRIPTION_ISSUE      -> "Phát hành toa thuốc";
             case ACTION_PRESCRIPTION_PRINT      -> "In toa thuốc";
             default                             -> action;
+        };
+    }
+
+    private Specification<AuditLog> buildAuditLogSpecification(String resourceType, Long actorId, String action,
+                                                               String exactResourceType, Long resourceId,
+                                                               DateRange range) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (resourceType != null && !resourceType.isBlank()) {
+                predicates.add(criteriaBuilder.equal(root.get("resourceType"), resourceType));
+            }
+            if (actorId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("actorId"), actorId));
+            }
+            if (action != null && !action.isBlank()) {
+                predicates.add(criteriaBuilder.equal(root.get("action"), action));
+            }
+            if (exactResourceType != null && !exactResourceType.isBlank()) {
+                predicates.add(criteriaBuilder.equal(root.get("resourceType"), exactResourceType));
+            }
+            if (resourceId != null) {
+                predicates.add(criteriaBuilder.equal(root.get("resourceId"), resourceId));
+            }
+            if (range.fromDateTime() != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), range.fromDateTime()));
+            }
+            if (range.toDateTime() != null) {
+                predicates.add(criteriaBuilder.lessThan(root.get("createdAt"), range.toDateTime()));
+            }
+            return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
         };
     }
 

@@ -56,6 +56,7 @@ public class APIRoutes {
     public static final String DASHBOARD_RECORDS_BY_STATUS  = "dashboard/records-by-status";
     public static final String DASHBOARD_RECORDS_BY_DEPT    = "dashboard/records-by-department";
     public static final String DASHBOARD_USER_PERFORMANCE   = "dashboard/user-performance";
+    public static final String DASHBOARD_TIMELINE           = "dashboard/timeline";
 
     // Notification
     public static final String NOTIFICATION_ROUTE           = "notifications";

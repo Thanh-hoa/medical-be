@@ -13,6 +13,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DashboardStatItemRes {
+    String key;
     String label;
     long count;
+    double percent;
 }

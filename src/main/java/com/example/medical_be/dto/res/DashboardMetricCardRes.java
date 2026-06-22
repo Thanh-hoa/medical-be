@@ -12,11 +12,12 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DashboardUserPerformanceRes {
-    Long accountId;
-    String accountName;
-    long uploaded;
-    long approved;
-    long rejected;
-    long totalActions;
+public class DashboardMetricCardRes {
+    String key;
+    String label;
+    long value;
+    long previousValue;
+    long change;
+    double changePercent;
+    String trend;
 }

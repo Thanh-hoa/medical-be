@@ -1,5 +1,7 @@
 package com.example.medical_be.dto.res;
 
+import java.time.LocalDate;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,11 +14,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class DashboardUserPerformanceRes {
-    Long accountId;
-    String accountName;
-    long uploaded;
-    long approved;
-    long rejected;
-    long totalActions;
+public class DashboardRangeRes {
+    String period;
+    LocalDate fromDate;
+    LocalDate toDate;
+    LocalDate previousFromDate;
+    LocalDate previousToDate;
 }
