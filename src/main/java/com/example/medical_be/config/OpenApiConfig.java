@@ -126,4 +126,21 @@ public class OpenApiConfig {
                 .pathsToMatch(APIRoutes.API_V1 + "/dashboard/**")
                 .build();
     }
+
+    @Bean
+    GroupedOpenApi group09Medicine() {
+        return GroupedOpenApi.builder()
+                .group("09-medicine")
+                .displayName("09. Medicine Catalog APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/medicine/**")
+                .build();
+    }
+    @Bean
+    GroupedOpenApi group10Prescription() {
+        return GroupedOpenApi.builder()
+                .group("10-prescription")
+                .displayName("10. Prescription APIs")
+                .pathsToMatch(APIRoutes.API_V1 + "/prescription/**")
+                .build();
+    }
 }

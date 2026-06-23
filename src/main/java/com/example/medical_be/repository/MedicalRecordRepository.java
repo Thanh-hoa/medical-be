@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.medical_be.entity.MedicalRecord;
-import com.example.medical_be.entity.MedicalRecordStatus;
+import com.example.medical_be.entity.enums.MedicalRecordStatus;
 
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
@@ -87,11 +87,40 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
     long countApprovedSince(@Param("from") LocalDateTime from);
 
     @Query("""
+            SELECT COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.createdAt >= :from AND m.createdAt < :to
+            """)
+    long countCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.approvedAt >= :from AND m.approvedAt < :to
+            """)
+    long countApprovedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.rejectedAt >= :from AND m.rejectedAt < :to
+            """)
+    long countRejectedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
             SELECT m.status, COUNT(m) FROM MedicalRecord m
             WHERE (m.isDelete IS NULL OR m.isDelete = false)
             GROUP BY m.status
             """)
     List<Object[]> countGroupByStatus();
+
+    @Query("""
+            SELECT m.status, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.createdAt >= :from AND m.createdAt < :to
+            GROUP BY m.status
+            """)
+    List<Object[]> countGroupByStatusCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     @Query("""
             SELECT m.department, COUNT(m) FROM MedicalRecord m
@@ -103,11 +132,29 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
     List<Object[]> countGroupByDepartment();
 
     @Query("""
+            SELECT m.department, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.department IS NOT NULL AND m.department != ''
+            AND m.createdAt >= :from AND m.createdAt < :to
+            GROUP BY m.department
+            ORDER BY COUNT(m) DESC
+            """)
+    List<Object[]> countGroupByDepartmentCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
             SELECT m.uploadedBy, COUNT(m) FROM MedicalRecord m
             WHERE (m.isDelete IS NULL OR m.isDelete = false)
             GROUP BY m.uploadedBy
             """)
     List<Object[]> countGroupByUploadedBy();
+
+    @Query("""
+            SELECT m.uploadedBy, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.createdAt >= :from AND m.createdAt < :to
+            GROUP BY m.uploadedBy
+            """)
+    List<Object[]> countGroupByUploadedByCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     @Query("""
             SELECT m.approvedBy, COUNT(m) FROM MedicalRecord m
@@ -117,9 +164,48 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
     List<Object[]> countGroupByApprovedBy();
 
     @Query("""
+            SELECT m.approvedBy, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.approvedBy IS NOT NULL
+            AND m.approvedAt >= :from AND m.approvedAt < :to
+            GROUP BY m.approvedBy
+            """)
+    List<Object[]> countGroupByApprovedByBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
             SELECT m.rejectedBy, COUNT(m) FROM MedicalRecord m
             WHERE (m.isDelete IS NULL OR m.isDelete = false) AND m.rejectedBy IS NOT NULL
             GROUP BY m.rejectedBy
             """)
     List<Object[]> countGroupByRejectedBy();
+
+    @Query("""
+            SELECT m.rejectedBy, COUNT(m) FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.rejectedBy IS NOT NULL
+            AND m.rejectedAt >= :from AND m.rejectedAt < :to
+            GROUP BY m.rejectedBy
+            """)
+    List<Object[]> countGroupByRejectedByBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT m FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.createdAt >= :from AND m.createdAt < :to
+            """)
+    List<MedicalRecord> findCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT m FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.approvedAt >= :from AND m.approvedAt < :to
+            """)
+    List<MedicalRecord> findApprovedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("""
+            SELECT m FROM MedicalRecord m
+            WHERE (m.isDelete IS NULL OR m.isDelete = false)
+            AND m.rejectedAt >= :from AND m.rejectedAt < :to
+            """)
+    List<MedicalRecord> findRejectedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

@@ -1,5 +1,7 @@
 package com.example.medical_be.dto.res;
 
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +15,8 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class DashboardOverviewRes {
+    DashboardRangeRes range;
+    List<DashboardMetricCardRes> cards;
     long totalRecords;
     long totalPatients;
     long totalAccounts;

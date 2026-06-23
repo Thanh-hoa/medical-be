@@ -18,4 +18,5 @@ public class DashboardUserPerformanceRes {
     long uploaded;
     long approved;
     long rejected;
+    long totalActions;
 }

@@ -56,6 +56,7 @@ public class APIRoutes {
     public static final String DASHBOARD_RECORDS_BY_STATUS  = "dashboard/records-by-status";
     public static final String DASHBOARD_RECORDS_BY_DEPT    = "dashboard/records-by-department";
     public static final String DASHBOARD_USER_PERFORMANCE   = "dashboard/user-performance";
+    public static final String DASHBOARD_TIMELINE           = "dashboard/timeline";
 
     // Notification
     public static final String NOTIFICATION_ROUTE           = "notifications";
@@ -64,6 +65,16 @@ public class APIRoutes {
     public static final String NOTIFICATION_MARK_READ       = "notifications/{id}/read";
     public static final String NOTIFICATION_MARK_ALL_READ   = "notifications/read-all";
     public static final String NOTIFICATION_DELETE          = "notifications/{id}";
+
+    // Medicine
+    public static final String MEDICINE_LIST               = "medicine/list";
+
+    // Prescription
+    public static final String PRESCRIPTION_CREATE_BY_RECORD = "prescription/medical-record/{recordId}";
+    public static final String PRESCRIPTION_GET_BY_RECORD    = "prescription/medical-record/{recordId}";
+    public static final String PRESCRIPTION_UPDATE           = "prescription/{id}";
+    public static final String PRESCRIPTION_ISSUE            = "prescription/{id}/issue";
+    public static final String PRESCRIPTION_PRINT            = "prescription/{id}/print";
 
     // Webhook (Admin only)
     public static final String WEBHOOK_ROUTE               = "admin/webhooks";

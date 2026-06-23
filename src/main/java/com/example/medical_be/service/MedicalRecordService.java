@@ -33,7 +33,7 @@ import com.example.medical_be.dto.res.OcrResponse;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
 import com.example.medical_be.entity.MedicalRecord;
-import com.example.medical_be.entity.MedicalRecordStatus;
+import com.example.medical_be.entity.enums.MedicalRecordStatus;
 import com.example.medical_be.event.MedicalRecordUploadedEvent;
 import com.example.medical_be.event.MedicalRecordSubmittedEvent;
 import com.example.medical_be.event.MedicalRecordApprovedEvent;
