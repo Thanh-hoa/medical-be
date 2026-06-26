@@ -3,6 +3,7 @@ package com.example.medical_be.service;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.example.medical_be.dto.res.OcrResponse;
@@ -74,7 +76,7 @@ public class OcrService {
                     .body(BodyInserters.fromMultipartData(builder.build()))
                     .retrieve()
                     .onStatus(
-                            status -> status.isError(),
+                            status -> status.is4xxClientError(),
                             resp -> resp.bodyToMono(String.class)
                                     .flatMap(body -> Mono.error(
                                             new ApplicationException(
@@ -96,11 +98,20 @@ public class OcrService {
     }
 
     private boolean isRetryable(Throwable throwable) {
-        if (throwable instanceof WebClientResponseException e) {
-            return e.getStatusCode().is5xxServerError();
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof WebClientResponseException e) {
+                return e.getStatusCode().is5xxServerError();
+            }
+            if (current instanceof WebClientRequestException
+                    || current instanceof ConnectException
+                    || current instanceof SocketTimeoutException
+                    || current instanceof ReadTimeoutException
+                    || current instanceof TimeoutException) {
+                return true;
+            }
+            current = current.getCause();
         }
-        return throwable instanceof ConnectException
-                || throwable instanceof SocketTimeoutException
-                || throwable instanceof ReadTimeoutException;
+        return false;
     }
 }

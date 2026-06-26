@@ -4,16 +4,21 @@ import com.example.medical_be.dto.res.FileUploadInfo;
 import com.example.medical_be.exception.ApplicationException;
 import com.example.medical_be.i18n.IMessageTranslator;
 
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.regions.Region;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,22 +27,31 @@ public class FileStorageService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp");
 
-    private final Path uploadDir;
-    private final String serverUrl;
+    private final S3Client s3Client;
+    private final String bucketName;
+    private final String bucketRegion;
     private final IMessageTranslator messageTranslator;
 
     public FileStorageService(
-            @Value("${app.upload-dir:uploads/photos}") String uploadDir,
-            @Value("${app.server.url:http://localhost:8080}") String serverUrl,
+            @Value("${aws.s3.bucket-name}") String bucketName,
+            @Value("${aws.s3.region}") String region,
+            @Value("${aws.s3.access-key:}") String accessKey,
+            @Value("${aws.s3.secret-key:}") String secretKey,
             IMessageTranslator messageTranslator) {
-        this.uploadDir = Paths.get(uploadDir).toAbsolutePath().normalize();
-        this.serverUrl = serverUrl;
+        this.bucketName = bucketName;
+        this.bucketRegion = "https://" + bucketName + ".s3." + region + ".amazonaws.com/";
         this.messageTranslator = messageTranslator;
-        try {
-            Files.createDirectories(this.uploadDir);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create upload directory: " + uploadDir, e);
+        this.s3Client = S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(resolveCredentialsProvider(accessKey, secretKey))
+                .build();
+    }
+
+    private AwsCredentialsProvider resolveCredentialsProvider(String accessKey, String secretKey) {
+        if (StringUtils.hasText(accessKey) && StringUtils.hasText(secretKey)) {
+            return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
         }
+        return DefaultCredentialsProvider.create();
     }
 
     public FileUploadInfo store(MultipartFile file) {
@@ -51,13 +65,20 @@ public class FileStorageService {
 
         String filename = UUID.randomUUID() + "." + extension.toLowerCase();
         try {
-            Files.copy(file.getInputStream(), this.uploadDir.resolve(filename),
-                    StandardCopyOption.REPLACE_EXISTING);
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(filename)
+                    .contentType(file.getContentType())
+                    .build();
+
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
         } catch (IOException e) {
-            throw new ApplicationException(messageTranslator.getMessage("file.upload_failed"));
+            throw new ApplicationException("Upload failed");
         }
 
-        String filePath = serverUrl + "/uploads/photos/" + filename;
+        String filePath = bucketRegion + filename;
         return new FileUploadInfo(filePath, originalFilename, extension.toLowerCase());
     }
 }

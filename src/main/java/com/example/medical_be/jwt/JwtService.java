@@ -17,7 +17,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @FieldDefaults(level =  AccessLevel.PRIVATE, makeFinal = true)
 public class JwtService {
