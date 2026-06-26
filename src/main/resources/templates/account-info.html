@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Thông tin tài khoản</title>
+</head>
+<body>
+    <h2>Xin chào, <span th:text="${name}">User</span>!</h2>
+    <p>Tài khoản của bạn đã được tạo thành công. Dưới đây là thông tin đăng nhập:</p>
+    <ul>
+        <li><strong>Email:</strong> <span th:text="${email}"></span></li>
+        <li><strong>Mật khẩu:</strong> <span th:text="${password}"></span></li>
+    </ul>
+    <p>Vui lòng đăng nhập và đổi mật khẩu ngay sau khi nhận được email này.</p>
+</body>
+</html>

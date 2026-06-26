@@ -1,5 +1,10 @@
 HELP.md
 target/
+
+# Environment variables — KHÔNG commit lên git
+.env
+*.env
+!.env.example
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -31,3 +36,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore auth flow doc
+docs/9_AUTH_FLOW.md
+docs/4_PERMISSION_DESIGN.md
+docs/IMPLEMENTATION_PLAN.md
+docs/FRONTEND_PLAN.md
+docs/CALL_API_Account_flow.md
+docs/FE_API_FLOW.md
+uploads/photos/
+plantuml
+docs
