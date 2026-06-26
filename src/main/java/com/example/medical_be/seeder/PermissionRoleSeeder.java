@@ -39,7 +39,6 @@ public class PermissionRoleSeeder implements ISeeder {
         log.info("Seeded permission roles");
     }
 
-    // ── ADMIN: full access on all modules ──────────────────────────────
     private void assignAdminPermissions() {
         Role admin = findRole(RoleConstant.ROLE_ADMIN);
 
@@ -67,7 +66,7 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.VIEW_PERMISSION);
     }
 
-    // ── DOCTOR: approve/reject + prescribe + view patient/record ───────
+ 
     private void assignDoctorPermissions() {
         Role doctor = findRole(RoleConstant.ROLE_DOCTOR);
 
@@ -78,7 +77,6 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.VIEW_PERMISSION, PermissionConstant.CREATE_PERMISSION,
                 PermissionConstant.CANCEL_PERMISSION);
 
-        // Bác sĩ cần xem thông tin bệnh nhân khi kê toa (tra cứu BHYT, địa chỉ, lịch sử)
         grant(doctor, MedicalRecordConstant.PATIENT_SEARCH,
                 PermissionConstant.VIEW_PERMISSION);
 
@@ -86,7 +84,6 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.VIEW_PERMISSION);
     }
 
-    // ── EMPLOYEE: upload + OCR review ──────────────────────────────────
     private void assignEmployeePermissions() {
         Role employee = findRole(RoleConstant.ROLE_EMPLOYEE);
 
@@ -95,7 +92,6 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.EDIT_PERMISSION);
     }
 
-    // ── helpers ────────────────────────────────────────────────────────
 
     private void grant(Role role, String permissionSlug, String... actionCodes) {
         Permission permission = permissionRepository.findBySlug(permissionSlug)

@@ -1,34 +1,33 @@
 server:
-  port: ${SERVER_PORT}
-
+  port: ${SERVER_PORT:8080}
 spring:
   application:
     name: medical-be
-
   datasource:
     url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME:}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
-
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO}
-    show-sql: ${JPA_SHOW_SQL}
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        format_sql: ${JPA_FORMAT_SQL}
-
+        format_sql: ${JPA_FORMAT_SQL:false}
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 15
   messages:
     basename: lang/messages
     encoding: UTF-8
     fallback-to-system-locale: false
     use-code-as-default-message: true
-
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${SPRING_MAIL_USERNAME:}
-    password: ${SPRING_MAIL_PASSWORD:}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -38,7 +37,7 @@ spring:
             required: true
           ssl:
             trust: smtp.gmail.com
-        debug: ${MAIL_DEBUG}
+        debug: ${MAIL_DEBUG:false}
 
   servlet:
     multipart:
@@ -50,12 +49,12 @@ ocr:
     url: ${OCR_API_URL}
 
 encryption:
-  secret-key: ${ENCRYPTION_SECRET_KEY:}
+  secret-key: ${ENCRYPTION_SECRET_KEY}
 
 app:
   key: ${APP_KEY}
-  debug: ${APP_DEBUG}
-  upload-dir: ${APP_UPLOAD_DIR}
+  debug: ${APP_DEBUG:false}
+  upload-dir: ${APP_UPLOAD_DIR:uploads/photos}
   server:
     url: ${APP_SERVER_URL}
     description: Development Server
@@ -65,3 +64,10 @@ springdoc:
     path: /documents/swagger-ui
   api-docs:
     path: /documents/api-docs
+
+aws:
+  s3:
+    bucket-name: ${AWS_BUCKET_NAME:medicaler-image}
+    region: ${AWS_REGION:ap-southeast-2}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
