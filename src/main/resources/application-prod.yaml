@@ -16,9 +16,9 @@ app:
 
 springdoc:
   swagger-ui:
-    enabled: false
+    enabled: true
   api-docs:
-    enabled: false
+    enabled: true
 
 aws:
   s3:
