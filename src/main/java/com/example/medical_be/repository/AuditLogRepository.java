@@ -1,4 +1,4 @@
-﻿package com.example.medical_be.repository;
+package com.example.medical_be.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
