@@ -33,6 +33,7 @@ import com.example.medical_be.dto.res.OcrResponse;
 import com.example.medical_be.dto.res.PagedResponse;
 import com.example.medical_be.dto.res.PatientRes;
 import com.example.medical_be.entity.MedicalRecord;
+import com.example.medical_be.entity.Patient;
 import com.example.medical_be.entity.enums.MedicalRecordStatus;
 import com.example.medical_be.event.MedicalRecordUploadedEvent;
 import com.example.medical_be.event.MedicalRecordSubmittedEvent;
@@ -46,6 +47,7 @@ import com.example.medical_be.mapper.MedicalRecordMapper;
 import com.example.medical_be.repository.MedicalRecordRepository;
 import com.example.medical_be.support.AccountSupport;
 import com.example.medical_be.support.PaginationUtils;
+import com.example.medical_be.validation.PatientValidate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -60,8 +62,9 @@ public class MedicalRecordService implements IMedicalRecordService {
             "status", "status",
             "record_number", "recordNumber");
     static final Set<String> KNOWN_OCR_KEYS = Set.of(
-            "patient_name", "patient_bhyt", "patient_dob", "patient_gender", "patient_address",
-            "facility", "department", "signer_name", "diagnosis");
+            "patient_name", "patient_bhyt", "patient_cccd", "patient_citizen_id",
+            "citizen_id", "cccd", "patient_dob", "patient_gender", "patient_address",
+            "facility", "department", "record_type", "recordType", "specimen_type", "signer_name", "diagnosis");
 
     final MedicalRecordRepository medicalRecordRepository;
     final PatientService patientService;
@@ -72,6 +75,7 @@ public class MedicalRecordService implements IMedicalRecordService {
     final MedicalRecordMapper medicalRecordMapper;
     final ApplicationEventPublisher eventPublisher;
     final NotificationService notificationService;
+    final PatientValidate patientValidate;
 
     @Override
     @Transactional
@@ -103,15 +107,23 @@ public class MedicalRecordService implements IMedicalRecordService {
             record.setExtractedData(extracted);
             record.setLabData(labData != null ? labData : new ArrayList<>());
             record.setDepartment(extracted.getDepartment());
+            record.setRecordType(extracted.getRecordType());
             String bhyt = rawData != null ? rawData.get("patient_bhyt") : null;
+            String citizenId = rawData != null
+                    ? firstNonBlank(
+                            rawData.get("patient_cccd"),
+                            rawData.get("patient_citizen_id"),
+                            rawData.get("citizen_id"),
+                            rawData.get("cccd"))
+                    : null;
             String name = rawData != null ? rawData.get("patient_name") : null;
-            if (bhyt != null && !bhyt.isBlank() && name != null && !name.isBlank()) {
+            if (name != null && !name.isBlank()) {
                 PatientRes patient = patientService.findOrCreate(new CreatePatientReq(
-                        bhyt, name,
+                        name, bhyt, citizenId,
                         rawData.get("patient_dob"),
                         rawData.get("patient_gender"),
                         rawData.get("patient_address"),
-                        null));
+                        rawData.get("patient_phone")));
                 record.setPatientId(patient.getId());
             }
         }
@@ -190,6 +202,11 @@ public class MedicalRecordService implements IMedicalRecordService {
                 ? record.getExtractedData() : new ExtractedDataDto();
         setExtractedField(data, req.fieldName(), req.fieldValue());
         record.setExtractedData(data);
+        if ("department".equals(req.fieldName())) {
+            record.setDepartment(normalizeDepartment(req.fieldValue()));
+        } else if ("record_type".equals(req.fieldName()) || "recordType".equals(req.fieldName())) {
+            record.setRecordType(req.fieldValue());
+        }
         medicalRecordRepository.save(record);
     }
 
@@ -203,6 +220,7 @@ public class MedicalRecordService implements IMedicalRecordService {
         if (record.getStatus() != MedicalRecordStatus.EXTRACTED) {
             throw new ApplicationException(messageTranslator.getMessage("record.submit.invalid_status"));
         }
+        ensurePatientReadyForReview(record);
         record.setStatus(MedicalRecordStatus.PENDING_DOCTOR_REVIEW);
         record.setVerifiedBy(accountSupport.getCurrentAccountId());
         record.setVerifiedAt(LocalDateTime.now());
@@ -266,6 +284,7 @@ public class MedicalRecordService implements IMedicalRecordService {
         if (record.getStatus() != MedicalRecordStatus.REJECTED) {
             throw new ApplicationException(messageTranslator.getMessage("record.resubmit.invalid_status"));
         }
+        ensurePatientReadyForReview(record);
         record.setStatus(MedicalRecordStatus.PENDING_DOCTOR_REVIEW);
         record.setRejectedBy(null);
         record.setRejectedAt(null);
@@ -309,12 +328,27 @@ public class MedicalRecordService implements IMedicalRecordService {
     }
 
     private PatientRes upsertPatient(MedicalRecord record, UpdateMedicalRecordPatientReq req) {
-        if (req.bhyt() == null || req.bhyt().isBlank() || req.name() == null || req.name().isBlank()) {
-            throw new ApplicationException(messageTranslator.getMessage("patient.not_found"));
+        if (req.name() == null || req.name().isBlank()) {
+            throw new ApplicationException(messageTranslator.getMessage("patient.name.required"));
+        }
+        if (record.getPatientId() == null) {
+            return patientService.findOrCreate(new CreatePatientReq(
+                    req.name(), req.bhyt(), req.citizenId(),
+                    req.dob(), req.gender(), req.address(), req.phone()));
         }
         return patientService.update(new UpdatePatientReq(
-                record.getPatientId(), req.bhyt(), req.name(),
+                record.getPatientId(), req.name(), req.bhyt(), req.citizenId(),
                 req.dob(), req.gender(), req.address(), req.phone()));
+    }
+
+    private void ensurePatientReadyForReview(MedicalRecord record) {
+        if (record.getPatientId() == null) {
+            throw new ApplicationException(messageTranslator.getMessage("record.submit.patient_identifier_required"));
+        }
+        Patient patient = patientValidate.validatePatientExist(record.getPatientId());
+        if (isBlank(patient.getBhyt()) && isBlank(patient.getCitizenId())) {
+            throw new ApplicationException(messageTranslator.getMessage("record.submit.patient_identifier_required"));
+        }
     }
 
     private ExtractedDataDto mapRawToExtractedData(Map<String, String> raw) {
@@ -324,6 +358,7 @@ public class MedicalRecordService implements IMedicalRecordService {
         return ExtractedDataDto.builder()
                 .facility(raw.get("facility"))
                 .department(normalizeDepartment(raw.get("department")))
+                .recordType(firstNonBlank(raw.get("record_type"), raw.get("recordType"), raw.get("specimen_type")))
                 .signerName(raw.get("signer_name"))
                 .diagnosis(raw.get("diagnosis"))
                 .extra(extra.isEmpty() ? null : extra)
@@ -334,6 +369,7 @@ public class MedicalRecordService implements IMedicalRecordService {
         switch (fieldName) {
             case "facility"                      -> dto.setFacility(value);
             case "department"                    -> dto.setDepartment(value);
+            case "record_type", "recordType"     -> dto.setRecordType(value);
             case "signer_name", "signerName"     -> dto.setSignerName(value);
             case "diagnosis"                     -> dto.setDiagnosis(value);
             default -> {
@@ -356,6 +392,18 @@ public class MedicalRecordService implements IMedicalRecordService {
     private String normalizeDepartment(String value) {
         if (value == null || value.isBlank()) return value;
         return value.replaceAll("(?i)^(phòng|khoa)\\s*:\\s*", "").trim();
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) return null;
+        for (String value : values) {
+            if (value != null && !value.isBlank()) return value;
+        }
+        return null;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private String generateRecordNumber() {

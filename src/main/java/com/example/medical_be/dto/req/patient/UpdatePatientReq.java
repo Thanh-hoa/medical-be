@@ -4,8 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 
 public record UpdatePatientReq(
         Long id,
-        @NotBlank String bhyt,
         @NotBlank String name,
+        String bhyt,
+        String citizenId,
         String dob,     
         String gender,   
         String address,
