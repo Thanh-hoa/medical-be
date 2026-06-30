@@ -10,6 +10,7 @@ import com.example.medical_be.dto.res.PatientRes;
 public interface IPatientService {
     
     MedicalRecordSummaryPatient findByBhyt(String search);
+    MedicalRecordSummaryPatient findByIdentifier(String search);
     PagedResponse<PatientRes> search(PatientSearchReq req);
     PatientRes findOrCreate(CreatePatientReq req);
     PatientRes update(UpdatePatientReq req);

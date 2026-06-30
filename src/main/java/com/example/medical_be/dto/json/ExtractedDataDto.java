@@ -21,16 +21,14 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ExtractedDataDto {
 
-    // Thông tin cơ sở / phiếu
+   
     String facility;
     String department;
+    String recordType;
     String signerName;
-    
-
-    // Chẩn đoán
+ 
     String diagnosis;
 
-    // Trường OCR chưa phân loại hoặc dữ liệu cũ dạng flat map
     Map<String, String> extra;
 
     @JsonAnySetter
