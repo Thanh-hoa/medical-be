@@ -51,11 +51,13 @@ public class PatientController {
                                     examples = @ExampleObject(value = PatientApiExamples.SEARCH_BY_BHYT_SUCCESS)))
     @PreAuthorize("hasAuthority('patient-search:view')")
     @GetMapping(APIRoutes.PATIENT_SEARCH)
-    public ResponseEntity<JSONResponse<?>> searchByBhyt(@RequestParam String bhyt) {
+    public ResponseEntity<JSONResponse<?>> searchByBhyt(
+            @RequestParam(required = false) String identifier,
+            @RequestParam(required = false) String bhyt) {
         return ResponseEntity.ok(JSONResponse.<MedicalRecordSummaryPatient>builder()
                 .isError(false)
                 .message(messageTranslator.getMessage("patient.detail_success"))
-                .data(patientService.findByBhyt(bhyt))
+                .data(patientService.findByIdentifier(firstNonBlank(identifier, bhyt)))
                 .build());
     }
 
@@ -106,5 +108,13 @@ public class PatientController {
                 .message(messageTranslator.getMessage("patient.update_success"))
                 .data(patientService.update(req))
                 .build());
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) return null;
+        for (String value : values) {
+            if (value != null && !value.isBlank()) return value;
+        }
+        return null;
     }
 }

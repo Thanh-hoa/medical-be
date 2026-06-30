@@ -37,8 +37,18 @@ public class Patient {
     Long id;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "bhyt", length = 500, unique = true, nullable = false)
+    @Column(name = "bhyt", length = 500)
     String bhyt;
+
+    @Column(name = "bhyt_hash", length = 64)
+    String bhytHash;
+
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "citizen_id", length = 500)
+    String citizenId;
+
+    @Column(name = "citizen_id_hash", length = 64)
+    String citizenIdHash;
 
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "name", length = 500, nullable = false)

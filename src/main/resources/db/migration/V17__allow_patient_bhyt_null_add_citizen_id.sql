@@ -1,0 +1,4 @@
+ALTER TABLE patients
+    DROP CONSTRAINT IF EXISTS patients_bhyt_key,
+    ALTER COLUMN bhyt DROP NOT NULL,
+    ADD COLUMN IF NOT EXISTS citizen_id VARCHAR(500);

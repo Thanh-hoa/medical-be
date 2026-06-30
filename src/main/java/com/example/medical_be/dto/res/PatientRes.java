@@ -18,6 +18,7 @@ import lombok.experimental.FieldDefaults;
 public class PatientRes {
     Long id;
     String bhyt;
+    String citizenId;
     String name;
     LocalDate dob;
     String gender;
