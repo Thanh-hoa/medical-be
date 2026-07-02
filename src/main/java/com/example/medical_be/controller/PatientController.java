@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,10 +19,14 @@ import com.example.medical_be.dto.req.patient.PatientSearchReq;
 import com.example.medical_be.dto.req.patient.UpdatePatientReq;
 import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
+import com.example.medical_be.dto.res.PatientRecordDetailRes;
 import com.example.medical_be.dto.res.PatientRes;
+import com.example.medical_be.dto.res.PrescriptionPrintRes;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.routes.APIRoutes;
 import com.example.medical_be.service.IPatientService;
+import com.example.medical_be.service.IPrescriptionService;
+import com.example.medical_be.support.AccountSupport;
 import com.example.medical_be.swagger.GroupAPIConstant;
 import com.example.medical_be.swagger.PatientApiExamples;
 
@@ -41,7 +46,9 @@ import lombok.RequiredArgsConstructor;
 public class PatientController {
 
     private final IPatientService patientService;
+    private final IPrescriptionService prescriptionService;
     private final IMessageTranslator messageTranslator;
+    private final AccountSupport accountSupport;
 
     @Operation(summary = "Tra cứu chi tiết thông tin bệnh nhân theo BHYT ",
                description = "Tìm bệnh nhân theo số thẻ BHYT, trả về thông tin bệnh nhân và danh sách bệnh án (mới nhất trước)")
@@ -58,6 +65,52 @@ public class PatientController {
                 .isError(false)
                 .message(messageTranslator.getMessage("patient.detail_success"))
                 .data(patientService.findByIdentifier(firstNonBlank(identifier, bhyt)))
+                .build());
+    }
+
+    @Operation(summary = "Tự tra cứu bệnh án của chính mình",
+               description = "User tự nhập BHYT hoặc CCCD của mình để liên kết tài khoản với hồ sơ bệnh nhân lần đầu tra cứu; các lần sau gọi lại không cần truyền identifier")
+    @ApiResponse(responseCode = "200", description = "Thành công",
+                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = PatientApiExamples.SEARCH_BY_BHYT_SUCCESS)))
+    @PreAuthorize("hasAuthority('patient-self:view')")
+    @GetMapping(APIRoutes.PATIENT_ME)
+    public ResponseEntity<JSONResponse<?>> me(@RequestParam(required = false) String identifier) {
+        return ResponseEntity.ok(JSONResponse.<MedicalRecordSummaryPatient>builder()
+                .isError(false)
+                .message(messageTranslator.getMessage("patient.detail_success"))
+                .data(patientService.findOrLinkSelf(accountSupport.getCurrentAccountId(), identifier))
+                .build());
+    }
+
+    @Operation(summary = "Xem chi tiết một bệnh án của chính mình",
+               description = "Chỉ xem được nếu bệnh án đó thuộc về hồ sơ bệnh nhân đã liên kết với tài khoản hiện tại")
+    @ApiResponse(responseCode = "200", description = "Thành công",
+                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = JSONResponse.class)))
+    @PreAuthorize("hasAuthority('patient-self:view')")
+    @GetMapping(APIRoutes.PATIENT_ME_RECORD_DETAIL)
+    public ResponseEntity<JSONResponse<?>> myRecordDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(JSONResponse.<PatientRecordDetailRes>builder()
+                .isError(false)
+                .message(messageTranslator.getMessage("record.detail_success"))
+                .data(patientService.getOwnRecordDetail(accountSupport.getCurrentAccountId(), id))
+                .build());
+    }
+
+    @Operation(summary = "Xem toa thuốc của một bệnh án của chính mình",
+               description = "Chỉ xem được nếu bệnh án thuộc về hồ sơ bệnh nhân đã liên kết với tài khoản hiện tại, và toa thuốc đã được bác sĩ phát hành (issued)")
+    @ApiResponse(responseCode = "200", description = "Thành công",
+                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = JSONResponse.class)))
+    @PreAuthorize("hasAuthority('patient-self:view')")
+    @GetMapping(APIRoutes.PATIENT_ME_RECORD_PRESCRIPTION)
+    public ResponseEntity<JSONResponse<?>> myPrescription(@PathVariable Long id) {
+        return ResponseEntity.ok(JSONResponse.<PrescriptionPrintRes>builder()
+                .isError(false)
+                .message(messageTranslator.getMessage("prescription.get_success"))
+                .data(prescriptionService.getOwnPrintData(accountSupport.getCurrentAccountId(), id))
                 .build());
     }
 

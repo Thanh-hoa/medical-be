@@ -10,4 +10,5 @@ public interface IPrescriptionService {
     PrescriptionRes update(Long id, UpdatePrescriptionReq req);
     PrescriptionRes issue(Long id);
     PrescriptionPrintRes getPrintData(Long id);
+    PrescriptionPrintRes getOwnPrintData(Long accountId, Long medicalRecordId);
 }

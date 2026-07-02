@@ -44,10 +44,10 @@ public class Account {
      @Column(name="phone_number" , length = 12)
      String phoneNumber;
 
-     @Column(name="email" , unique = true , nullable = false )
+     @Column(name="email" , nullable = false )
      String email;
 
-     @Column(name="username" , unique = true , nullable = false)
+     @Column(name="username" , nullable = false)
      String username;
 
      @Column(name="password" , nullable = false)

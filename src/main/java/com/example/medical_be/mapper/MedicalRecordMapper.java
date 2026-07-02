@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.medical_be.dto.res.MedicalRecordDetailRes;
 import com.example.medical_be.dto.res.MedicalRecordSummaryRes;
+import com.example.medical_be.dto.res.PatientRecordDetailRes;
 import com.example.medical_be.entity.MedicalRecord;
 import com.example.medical_be.validation.PatientValidate;
 
@@ -35,6 +36,27 @@ public class MedicalRecordMapper {
                 .rejectedBy(record.getRejectedBy())
                 .rejectedAt(record.getRejectedAt())
                 .rejectionReason(record.getRejectionReason())
+                .createdAt(record.getCreatedAt())
+                .updatedAt(record.getUpdatedAt())
+                .extractedData(record.getExtractedData())
+                .labData(record.getLabData());
+
+        if (record.getPatientId() != null) {
+            builder.patient(patientMapper.toRes(patientValidate.validatePatientExist(record.getPatientId())));
+        }
+
+        return builder.build();
+    }
+
+    public PatientRecordDetailRes toPatientDetail(MedicalRecord record) {
+        PatientRecordDetailRes.PatientRecordDetailResBuilder builder = PatientRecordDetailRes.builder()
+                .id(record.getId())
+                .recordNumber(record.getRecordNumber())
+                .status(record.getStatus() != null ? record.getStatus().getDbValue() : null)
+                .department(record.getDepartment())
+                .recordType(record.getRecordType())
+                .fileName(record.getFileName())
+                .fileType(record.getFileType())
                 .createdAt(record.getCreatedAt())
                 .updatedAt(record.getUpdatedAt())
                 .extractedData(record.getExtractedData())

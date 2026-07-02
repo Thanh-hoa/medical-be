@@ -5,6 +5,7 @@ import com.example.medical_be.dto.req.patient.PatientSearchReq;
 import com.example.medical_be.dto.req.patient.UpdatePatientReq;
 import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
+import com.example.medical_be.dto.res.PatientRecordDetailRes;
 import com.example.medical_be.dto.res.PatientRes;
 
 public interface IPatientService {
@@ -14,5 +15,7 @@ public interface IPatientService {
     PagedResponse<PatientRes> search(PatientSearchReq req);
     PatientRes findOrCreate(CreatePatientReq req);
     PatientRes update(UpdatePatientReq req);
-    
+    MedicalRecordSummaryPatient findOrLinkSelf(Long accountId, String identifier);
+    PatientRecordDetailRes getOwnRecordDetail(Long accountId, Long recordId);
+
 }

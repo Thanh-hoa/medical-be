@@ -14,7 +14,6 @@ import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.service.IAccountService;
 import com.example.medical_be.swagger.AccountApiExamples;
 import com.example.medical_be.swagger.GroupAPIConstant;
-import com.example.medical_be.validation.ActiveAccountValidate;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -48,7 +47,6 @@ import jakarta.validation.Valid;
 @Tag(name = GroupAPIConstant.ACCOUNT_MANAGEMENT, description = "Các API liên quan đến quản lý tài khoản người dùng")
 public class AccountController {
 
-    private final ActiveAccountValidate activeAccountValidate;
     private final IAccountService accountService;
     private  final IMessageTranslator iMessageTranslator;
 
@@ -97,7 +95,7 @@ public class AccountController {
                     examples = @ExampleObject(value = AccountApiExamples.VALIDATE_TOKEN_SUCCESS)))
     @GetMapping(APIRoutes.VALIDATE_TOKEN)
     public ResponseEntity<JSONResponse<?>> validateToken(@RequestParam String token) {
-        activeAccountValidate.validateToken(token);
+        accountService.activeAccount(token);
         return ResponseEntity.ok(JSONResponse.<Void>builder()
                         .isError(false)
                         .message(iMessageTranslator.getMessage("account.activation_success"))
