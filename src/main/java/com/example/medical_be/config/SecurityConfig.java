@@ -110,7 +110,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://api.medicalocr-nthoa.io.vn",
-                "https://medicalocr-nthoa.io.vn"
+                "https://medicalocr-nthoa.io.vn",
+                "https://www.medicalocr-nthoa.io.vn"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
