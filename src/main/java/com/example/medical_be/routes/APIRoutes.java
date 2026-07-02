@@ -24,15 +24,16 @@ public class APIRoutes {
     public static final String UPLOAD_MEDIA = "common/upload/media";
     public static final String GET_ROLES    = "common/roles";
 
-    // Patient
     public static final String PATIENT_SEARCH      = "patient/search";   // GET ?bhyt=... → MedicalRecordSummaryPatient
     public static final String PATIENT_ME          = "patient/me";       // GET ?identifier= (optional sau lần đầu) → MedicalRecordSummaryPatient
+    public static final String PATIENT_ME_RECORD_DETAIL = "patient/me/records/{id}"; // GET → PatientRecordDetailRes (chỉ xem bệnh án của chính mình)
+    public static final String PATIENT_ME_RECORD_PRESCRIPTION = "patient/me/records/{id}/prescription"; // GET → PrescriptionPrintRes (chỉ xem toa thuốc của chính mình, đã issued)
     public static final String PATIENT_LIST         = "patient/list";     // GET ?q=&page=&limit= → PagedResponse
     public static final String PATIENT_DETAIL       = "patient/{id}";     // GET → PatientRes
     public static final String PATIENT_CREATE       = "patient/create";
     public static final String PATIENT_UPDATE       = "patient/update/{id}";
 
-    // Medical Record
+  
     public static final String MEDICAL_RECORD_CREATE        = "medical-record/create";
     public static final String MEDICAL_RECORD_UPLOAD        = "medical-record/upload";
     public static final String MEDICAL_RECORD_LIST          = "medical-record/list";
@@ -47,19 +48,19 @@ public class APIRoutes {
     public static final String MEDICAL_RECORD_DELETE        = "medical-record/{id}";
     public static final String MEDICAL_RECORD_FIELD_UPDATE  = "medical-record/field/update";
 
-    // Audit Log
+   
     public static final String AUDIT_LOG_LIST               = "audit-logs";
     public static final String AUDIT_LOG_DETAIL             = "audit-logs/{id}";
     public static final String AUDIT_LOG_BY_RECORD          = "medical-record/{id}/audit-logs";
 
-    // Dashboard
+    
     public static final String DASHBOARD_OVERVIEW           = "dashboard/overview";
     public static final String DASHBOARD_RECORDS_BY_STATUS  = "dashboard/records-by-status";
     public static final String DASHBOARD_RECORDS_BY_DEPT    = "dashboard/records-by-department";
     public static final String DASHBOARD_USER_PERFORMANCE   = "dashboard/user-performance";
     public static final String DASHBOARD_TIMELINE           = "dashboard/timeline";
 
-    // Notification
+    
     public static final String NOTIFICATION_ROUTE           = "notifications";
     public static final String NOTIFICATION_LIST            = "notifications";
     public static final String NOTIFICATION_UNREAD_COUNT    = "notifications/unread-count";
@@ -67,17 +68,17 @@ public class APIRoutes {
     public static final String NOTIFICATION_MARK_ALL_READ   = "notifications/read-all";
     public static final String NOTIFICATION_DELETE          = "notifications/{id}";
 
-    // Medicine
+    
     public static final String MEDICINE_LIST               = "medicine/list";
 
-    // Prescription
+   
     public static final String PRESCRIPTION_CREATE_BY_RECORD = "prescription/medical-record/{recordId}";
     public static final String PRESCRIPTION_GET_BY_RECORD    = "prescription/medical-record/{recordId}";
     public static final String PRESCRIPTION_UPDATE           = "prescription/{id}";
     public static final String PRESCRIPTION_ISSUE            = "prescription/{id}/issue";
     public static final String PRESCRIPTION_PRINT            = "prescription/{id}/print";
 
-    // Webhook (Admin only)
+  
     public static final String WEBHOOK_ROUTE               = "admin/webhooks";
     public static final String WEBHOOK_LIST                = "admin/webhooks";
     public static final String WEBHOOK_CREATE              = "admin/webhooks";

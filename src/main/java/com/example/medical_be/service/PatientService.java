@@ -23,11 +23,13 @@ import com.example.medical_be.dto.req.patient.PatientSearchReq;
 import com.example.medical_be.dto.req.patient.UpdatePatientReq;
 import com.example.medical_be.dto.res.MedicalRecordSummaryPatient;
 import com.example.medical_be.dto.res.PagedResponse;
+import com.example.medical_be.dto.res.PatientRecordDetailRes;
 import com.example.medical_be.dto.res.PatientRes;
 import com.example.medical_be.entity.MedicalRecord;
 import com.example.medical_be.entity.Patient;
 import com.example.medical_be.exception.ApplicationException;
 import com.example.medical_be.i18n.IMessageTranslator;
+import com.example.medical_be.mapper.MedicalRecordMapper;
 import com.example.medical_be.mapper.PatientMapper;
 import com.example.medical_be.repository.MedicalRecordRepository;
 import com.example.medical_be.repository.PatientRepository;
@@ -48,6 +50,7 @@ public class PatientService implements IPatientService {
     final MedicalRecordRepository medicalRecordRepository;
     final IMessageTranslator messageTranslator;
     final PatientMapper patientMapper;
+    final MedicalRecordMapper medicalRecordMapper;
     @Value("${encryption.secret-key}")
     String secretKey;
 
@@ -100,6 +103,18 @@ public class PatientService implements IPatientService {
         }
 
         return buildSummary(found);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PatientRecordDetailRes getOwnRecordDetail(Long accountId, Long recordId) {
+        Patient patient = patientRepository.findFirstByAccountId(accountId)
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("record.not_found")));
+
+        MedicalRecord record = medicalRecordRepository.findByIdAndPatientId(recordId, patient.getId())
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("record.not_found")));
+
+        return medicalRecordMapper.toPatientDetail(record);
     }
 
     private MedicalRecordSummaryPatient buildSummary(Patient patient) {

@@ -22,11 +22,13 @@ import com.example.medical_be.entity.MedicalRecord;
 import com.example.medical_be.entity.enums.MedicalRecordStatus;
 import com.example.medical_be.entity.Prescription;
 import com.example.medical_be.entity.enums.PrescriptionDurationOption;
+import com.example.medical_be.entity.Patient;
 import com.example.medical_be.entity.PrescriptionItem;
 import com.example.medical_be.entity.enums.PrescriptionStatus;
 import com.example.medical_be.exception.ApplicationException;
 import com.example.medical_be.repository.AccountRepository;
 import com.example.medical_be.repository.MedicalRecordRepository;
+import com.example.medical_be.repository.PatientRepository;
 import com.example.medical_be.repository.PrescriptionRepository;
 import com.example.medical_be.support.AccountSupport;
 
@@ -41,6 +43,7 @@ public class PrescriptionService implements IPrescriptionService {
 
     PrescriptionRepository prescriptionRepository;
     MedicalRecordRepository medicalRecordRepository;
+    PatientRepository patientRepository;
     AccountRepository accountRepository;
     AccountSupport accountSupport;
     ApplicationEventPublisher eventPublisher;
@@ -185,6 +188,26 @@ public class PrescriptionService implements IPrescriptionService {
         eventPublisher.publishEvent(
                 new PrescriptionPrintedEvent(this, prescription, accountSupport.getCurrentAccountId()));
 
+        return toPrintRes(prescription);
+    }
+
+    @Override
+    public PrescriptionPrintRes getOwnPrintData(Long accountId, Long medicalRecordId) {
+        Patient patient = patientRepository.findFirstByAccountId(accountId)
+                .orElseThrow(() -> new ApplicationException("Không tìm thấy toa thuốc"));
+
+        Prescription prescription = prescriptionRepository
+                .findByMedicalRecordIdAndPatientId(medicalRecordId, patient.getId())
+                .orElseThrow(() -> new ApplicationException("Không tìm thấy toa thuốc"));
+
+        if (prescription.getStatus() != PrescriptionStatus.ISSUED) {
+            throw new ApplicationException("Toa thuốc chưa được phát hành");
+        }
+
+        return toPrintRes(prescription);
+    }
+
+    private PrescriptionPrintRes toPrintRes(Prescription prescription) {
         String doctorName = accountRepository.findById(prescription.getDoctorId())
                 .map(a -> a.getName())
                 .orElse("");

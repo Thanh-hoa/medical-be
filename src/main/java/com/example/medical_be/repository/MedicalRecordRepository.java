@@ -73,6 +73,16 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
             @Param("id") Long id,
             @Param("uploadedBy") Long uploadedBy);
 
+    @Query("""
+            SELECT m FROM MedicalRecord m
+            WHERE m.id = :id
+            AND m.patientId = :patientId
+            AND (m.isDelete IS NULL OR m.isDelete = false)
+            """)
+    Optional<MedicalRecord> findByIdAndPatientId(
+            @Param("id") Long id,
+            @Param("patientId") Long patientId);
+
     // Dashboard queries
     @Query("SELECT COUNT(m) FROM MedicalRecord m WHERE (m.isDelete IS NULL OR m.isDelete = false)")
     long countActive();
