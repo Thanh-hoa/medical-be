@@ -22,7 +22,7 @@ public class AccountSentMailHelperService {
     private final IEmailService emailService;
     private final IMessageTranslator messageTranslator;
 
-    @Value("${app.frontend.url:http://localhost:3000}")
+    @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
     public void sendMailActiveAccount(Account account , String activationToken) {

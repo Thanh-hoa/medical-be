@@ -25,6 +25,7 @@ import com.example.medical_be.support.AccountSupportCreateToken;
 import com.example.medical_be.support.PaginationUtils;
 import com.example.medical_be.support.AccountSentMailHelperService;
 import com.example.medical_be.support.AccountSupport;
+import com.example.medical_be.support.constant.RoleConstant;
 import com.example.medical_be.validation.AccountValidate;
 import com.example.medical_be.validation.ActiveAccountValidate;
 
@@ -86,6 +87,10 @@ public class AccountService implements IAccountService {
                 "",
                 null
         );
+        Role patientRole = roleRepository.findByCode(RoleConstant.ROLE_PATIENT)
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("role.exist_invalid")));
+        assignRolesToAccount(account.getId(), List.of(patientRole.getId()));
+
          String token = accountHelperService.generateTokenActiveAccount(req.email());
         accountSentMailHelperService.sendMailActiveAccount(account, token);        
         return  accountMapper.toInfoAccount(account);

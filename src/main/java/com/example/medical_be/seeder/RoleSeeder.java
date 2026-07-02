@@ -68,6 +68,12 @@ public class RoleSeeder implements ISeeder {
                 .code(RoleConstant.ROLE_EMPLOYEE)
                 .isActive(true)
                 .isSuperAdmin(false)
+                .build(),
+                Role.builder()
+                .name("patient")
+                .code(RoleConstant.ROLE_PATIENT)
+                .isActive(true)
+                .isSuperAdmin(false)
                 .build()
             );
     }

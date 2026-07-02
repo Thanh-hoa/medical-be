@@ -17,6 +17,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findFirstByCitizenIdHash(String citizenIdHash);
 
+    Optional<Patient> findFirstByAccountId(Long accountId);
+
     @Query("SELECT COUNT(p) FROM Patient p WHERE p.createdAt >= :from AND p.createdAt < :to")
     long countCreatedBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }
