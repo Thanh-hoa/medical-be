@@ -22,6 +22,7 @@ import com.example.medical_be.dto.res.PatientRes;
 import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.routes.APIRoutes;
 import com.example.medical_be.service.IPatientService;
+import com.example.medical_be.support.AccountSupport;
 import com.example.medical_be.swagger.GroupAPIConstant;
 import com.example.medical_be.swagger.PatientApiExamples;
 
@@ -42,6 +43,7 @@ public class PatientController {
 
     private final IPatientService patientService;
     private final IMessageTranslator messageTranslator;
+    private final AccountSupport accountSupport;
 
     @Operation(summary = "Tra cứu chi tiết thông tin bệnh nhân theo BHYT ",
                description = "Tìm bệnh nhân theo số thẻ BHYT, trả về thông tin bệnh nhân và danh sách bệnh án (mới nhất trước)")
@@ -58,6 +60,22 @@ public class PatientController {
                 .isError(false)
                 .message(messageTranslator.getMessage("patient.detail_success"))
                 .data(patientService.findByIdentifier(firstNonBlank(identifier, bhyt)))
+                .build());
+    }
+
+    @Operation(summary = "Tự tra cứu bệnh án của chính mình",
+               description = "User tự nhập BHYT hoặc CCCD của mình để liên kết tài khoản với hồ sơ bệnh nhân lần đầu tra cứu; các lần sau gọi lại không cần truyền identifier")
+    @ApiResponse(responseCode = "200", description = "Thành công",
+                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                    schema = @Schema(implementation = JSONResponse.class),
+                                    examples = @ExampleObject(value = PatientApiExamples.SEARCH_BY_BHYT_SUCCESS)))
+    @PreAuthorize("hasAuthority('patient-self:view')")
+    @GetMapping(APIRoutes.PATIENT_ME)
+    public ResponseEntity<JSONResponse<?>> me(@RequestParam(required = false) String identifier) {
+        return ResponseEntity.ok(JSONResponse.<MedicalRecordSummaryPatient>builder()
+                .isError(false)
+                .message(messageTranslator.getMessage("patient.detail_success"))
+                .data(patientService.findOrLinkSelf(accountSupport.getCurrentAccountId(), identifier))
                 .build());
     }
 

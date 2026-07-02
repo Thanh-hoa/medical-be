@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<Account , Long> {
     Optional<Account> findByEmailAndIsActive(String email , Boolean isActive);
+    Optional<Account> findByEmailAndIsDelete(String email , Boolean isDelete);
     Optional<Account> findByEmail(String email);
 
     @Query("SELECT a FROM Account a LEFT JOIN FETCH a.rfAccountRoles r LEFT JOIN FETCH r.role WHERE a.email = :value OR a.username = :value")

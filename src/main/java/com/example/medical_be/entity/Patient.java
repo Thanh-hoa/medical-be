@@ -50,6 +50,9 @@ public class Patient {
     @Column(name = "citizen_id_hash", length = 64)
     String citizenIdHash;
 
+    @Column(name = "account_id")
+    Long accountId;
+
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "name", length = 500, nullable = false)
     String name;

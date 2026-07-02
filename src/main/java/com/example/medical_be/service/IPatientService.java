@@ -14,5 +14,6 @@ public interface IPatientService {
     PagedResponse<PatientRes> search(PatientSearchReq req);
     PatientRes findOrCreate(CreatePatientReq req);
     PatientRes update(UpdatePatientReq req);
-    
+    MedicalRecordSummaryPatient findOrLinkSelf(Long accountId, String identifier);
+
 }

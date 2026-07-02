@@ -36,6 +36,7 @@ public class PermissionRoleSeeder implements ISeeder {
         assignAdminPermissions();
         assignDoctorPermissions();
         assignEmployeePermissions();
+        assignPatientPermissions();
         log.info("Seeded permission roles");
     }
 
@@ -80,8 +81,8 @@ public class PermissionRoleSeeder implements ISeeder {
         grant(doctor, MedicalRecordConstant.PATIENT_SEARCH,
                 PermissionConstant.VIEW_PERMISSION);
 
-        grant(doctor, AdminConstant.DASHBOARD,
-                PermissionConstant.VIEW_PERMISSION);
+        // grant(doctor, AdminConstant.DASHBOARD,
+        //         PermissionConstant.VIEW_PERMISSION);
     }
 
     private void assignEmployeePermissions() {
@@ -92,6 +93,13 @@ public class PermissionRoleSeeder implements ISeeder {
                 PermissionConstant.EDIT_PERMISSION);
     }
 
+
+    private void assignPatientPermissions() {
+        Role patient = findRole(RoleConstant.ROLE_PATIENT);
+
+        grant(patient, MedicalRecordConstant.PATIENT_SELF,
+                PermissionConstant.VIEW_PERMISSION);
+    }
 
     private void grant(Role role, String permissionSlug, String... actionCodes) {
         Permission permission = permissionRepository.findBySlug(permissionSlug)

@@ -23,10 +23,11 @@ public class AccountValidate {
     }
 
     public void validateEmailNoExistsForRegister(String email ){
-        if(accountRepository.findByEmailAndIsActive(email , true).isPresent()){
+        if(accountRepository.findByEmailAndIsDelete(email , false).isPresent()){
             throw  new ApplicationException(iMessageTranslator.getMessage("account.email_existed"));
         }
     }
+   
     public Account validateAccountExist(Long accountId){
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new ApplicationException(iMessageTranslator.getMessage("account.not_found")));

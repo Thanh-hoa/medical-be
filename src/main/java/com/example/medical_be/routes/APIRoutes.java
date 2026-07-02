@@ -26,6 +26,7 @@ public class APIRoutes {
 
     // Patient
     public static final String PATIENT_SEARCH      = "patient/search";   // GET ?bhyt=... → MedicalRecordSummaryPatient
+    public static final String PATIENT_ME          = "patient/me";       // GET ?identifier= (optional sau lần đầu) → MedicalRecordSummaryPatient
     public static final String PATIENT_LIST         = "patient/list";     // GET ?q=&page=&limit= → PagedResponse
     public static final String PATIENT_DETAIL       = "patient/{id}";     // GET → PatientRes
     public static final String PATIENT_CREATE       = "patient/create";

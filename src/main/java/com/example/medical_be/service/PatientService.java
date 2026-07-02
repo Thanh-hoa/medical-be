@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -61,8 +62,47 @@ public class PatientService implements IPatientService {
     @Override
     @Transactional(readOnly = true)
     public MedicalRecordSummaryPatient findByIdentifier(String search) {
-        Patient patient = findPatientByIdentifier(search);
+        return buildSummary(findPatientByIdentifier(search));
+    }
 
+    @Override
+    @Transactional
+    public MedicalRecordSummaryPatient findOrLinkSelf(Long accountId, String identifier) {
+        Patient linked = patientRepository.findFirstByAccountId(accountId).orElse(null);
+        if (linked != null) {
+            return buildSummary(linked);
+        }
+
+        String normalized = normalizeIdentifier(identifier);
+        if (normalized == null) {
+            throw new ApplicationException(messageTranslator.getMessage("patient.self.identifier_required"));
+        }
+
+        Patient found = findPatientByBhytOrNull(normalized);
+        if (found == null) {
+            found = findPatientByCitizenIdOrNull(normalized);
+        }
+        if (found == null) {
+            throw new ApplicationException(messageTranslator.getMessage("patient.not_found"));
+        }
+
+        if (found.getAccountId() != null && !found.getAccountId().equals(accountId)) {
+            throw new ApplicationException(messageTranslator.getMessage("patient.self.already_linked"));
+        }
+
+        if (found.getAccountId() == null) {
+            found.setAccountId(accountId);
+            try {
+                found = patientRepository.save(found);
+            } catch (DataIntegrityViolationException e) {
+                throw new ApplicationException(messageTranslator.getMessage("patient.self.already_linked"));
+            }
+        }
+
+        return buildSummary(found);
+    }
+
+    private MedicalRecordSummaryPatient buildSummary(Patient patient) {
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<MedicalRecord> recordPage =
                 medicalRecordRepository.findByPatientIdOrderByCreatedAtDesc(patient.getId(), pageable);

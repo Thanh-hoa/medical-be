@@ -84,6 +84,12 @@ public class PermissionSeeder implements ISeeder {
                         .name("Thống kê")
                         .sort("6")
                         .isHidden(false)
+                        .build(),
+                Permission.builder()
+                        .slug(MedicalRecordConstant.PATIENT_SELF)
+                        .name("Tự tra cứu Bệnh án")
+                        .sort("7")
+                        .isHidden(true)
                         .build()
         );
     }
