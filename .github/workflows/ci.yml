@@ -1,4 +1,4 @@
-name: CI - Build & Test
+name: CI/CD - Build, Test & Deploy
 
 on:
   push:
@@ -46,6 +46,25 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/medical
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
-          APP_KEY: ${{ secrets.APP_KEY }}      
+          APP_KEY: ${{ secrets.APP_KEY }}
           SPRING_MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           SPRING_MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+
+  deploy:
+    name: Deploy to EC2
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into EC2 and redeploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ${{ secrets.EC2_DEPLOY_PATH }}
+            git pull origin main
+            docker compose up -d --build
+            docker image prune -f
