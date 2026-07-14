@@ -26,6 +26,7 @@ import com.example.medical_be.entity.Patient;
 import com.example.medical_be.entity.PrescriptionItem;
 import com.example.medical_be.entity.enums.PrescriptionStatus;
 import com.example.medical_be.exception.ApplicationException;
+import com.example.medical_be.i18n.IMessageTranslator;
 import com.example.medical_be.repository.AccountRepository;
 import com.example.medical_be.repository.MedicalRecordRepository;
 import com.example.medical_be.repository.PatientRepository;
@@ -47,6 +48,7 @@ public class PrescriptionService implements IPrescriptionService {
     AccountRepository accountRepository;
     AccountSupport accountSupport;
     ApplicationEventPublisher eventPublisher;
+    IMessageTranslator messageTranslator;
 
     @Override
     @Transactional
@@ -56,7 +58,7 @@ public class PrescriptionService implements IPrescriptionService {
                 .orElseGet(() -> {
                     MedicalRecord record = findApprovedRecord(recordId);
                     if (record.getPatientId() == null) {
-                        throw new ApplicationException("Bệnh án chưa có thông tin bệnh nhân");
+                        throw new ApplicationException(messageTranslator.getMessage("prescription.no_patient"));
                     }
 
                     Long doctorId = accountSupport.getCurrentAccountId();
@@ -110,7 +112,7 @@ public class PrescriptionService implements IPrescriptionService {
             prescription.setDurationOption(req.getDurationOption());
             if (req.getDurationOption() == PrescriptionDurationOption.CUSTOM) {
                 if (req.getDurationDays() == null || req.getDurationDays() < 1 || req.getDurationDays() > 365) {
-                    throw new ApplicationException("Số ngày dùng thuốc không hợp lệ");
+                    throw new ApplicationException(messageTranslator.getMessage("prescription.duration_days_invalid"));
                 }
                 prescription.setDurationDays(req.getDurationDays());
             } else {
@@ -136,34 +138,34 @@ public class PrescriptionService implements IPrescriptionService {
         Prescription prescription = findDraftPrescription(id);
 
         if (prescription.getHospitalName() == null || prescription.getHospitalName().isBlank()) {
-            throw new ApplicationException("Vui lòng nhập tên bệnh viện");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.hospital_name_required"));
         }
         if (prescription.getReceiverName() == null || prescription.getReceiverName().isBlank()) {
-            throw new ApplicationException("Vui lòng nhập tên người nhận");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.receiver_name_required"));
         }
         if (prescription.getDiagnosis() == null || prescription.getDiagnosis().isBlank()) {
-            throw new ApplicationException("Vui lòng nhập chẩn đoán");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.diagnosis_required"));
         }
         if (prescription.getDurationDays() == null) {
-            throw new ApplicationException("Vui lòng chọn thời gian dùng thuốc");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.duration_required"));
         }
         if (prescription.getItems() == null || prescription.getItems().isEmpty()) {
-            throw new ApplicationException("Toa thuốc phải có ít nhất một thuốc trước khi phát hành");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.items_required"));
         }
 
         for (PrescriptionItem item : prescription.getItems()) {
             if (item.getMedicineName() == null || item.getMedicineName().isBlank()) {
-                throw new ApplicationException("Tên thuốc không được để trống");
+                throw new ApplicationException(messageTranslator.getMessage("prescription.medicine_name_required"));
             }
             if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                throw new ApplicationException("Số lượng thuốc phải lớn hơn 0");
+                throw new ApplicationException(messageTranslator.getMessage("prescription.quantity_invalid"));
             }
             boolean hasDose = isNotBlank(item.getMorningDose())
                     || isNotBlank(item.getNoonDose())
                     || isNotBlank(item.getAfternoonDose())
                     || isNotBlank(item.getEveningDose());
             if (!hasDose) {
-                throw new ApplicationException("Vui lòng chọn ít nhất một thời điểm dùng thuốc");
+                throw new ApplicationException(messageTranslator.getMessage("prescription.dose_required"));
             }
         }
 
@@ -179,10 +181,10 @@ public class PrescriptionService implements IPrescriptionService {
     @Override
     public PrescriptionPrintRes getPrintData(Long id) {
         Prescription prescription = prescriptionRepository.findById(id)
-                .orElseThrow(() -> new ApplicationException("Không tìm thấy toa thuốc"));
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("prescription.not_found")));
 
         if (prescription.getStatus() != PrescriptionStatus.ISSUED) {
-            throw new ApplicationException("Toa thuốc chưa được phát hành");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.not_yet_issued"));
         }
 
         eventPublisher.publishEvent(
@@ -194,14 +196,14 @@ public class PrescriptionService implements IPrescriptionService {
     @Override
     public PrescriptionPrintRes getOwnPrintData(Long accountId, Long medicalRecordId) {
         Patient patient = patientRepository.findFirstByAccountId(accountId)
-                .orElseThrow(() -> new ApplicationException("Không tìm thấy toa thuốc"));
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("prescription.not_found")));
 
         Prescription prescription = prescriptionRepository
                 .findByMedicalRecordIdAndPatientId(medicalRecordId, patient.getId())
-                .orElseThrow(() -> new ApplicationException("Không tìm thấy toa thuốc"));
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("prescription.not_found")));
 
         if (prescription.getStatus() != PrescriptionStatus.ISSUED) {
-            throw new ApplicationException("Toa thuốc chưa được phát hành");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.not_yet_issued"));
         }
 
         return toPrintRes(prescription);
@@ -229,18 +231,18 @@ public class PrescriptionService implements IPrescriptionService {
 
     private MedicalRecord findApprovedRecord(Long recordId) {
         MedicalRecord record = medicalRecordRepository.findById(recordId)
-                .orElseThrow(() -> new ApplicationException("Không tìm thấy bệnh án"));
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("record.not_found")));
         if (record.getStatus() != MedicalRecordStatus.APPROVED) {
-            throw new ApplicationException("Bệnh án chưa được duyệt nên không thể tạo toa thuốc");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.not_approved"));
         }
         return record;
     }
 
     private Prescription findDraftPrescription(Long id) {
         Prescription prescription = prescriptionRepository.findById(id)
-                .orElseThrow(() -> new ApplicationException("Không tìm thấy toa thuốc"));
+                .orElseThrow(() -> new ApplicationException(messageTranslator.getMessage("prescription.not_found")));
         if (prescription.getStatus() != PrescriptionStatus.DRAFT) {
-            throw new ApplicationException("Toa thuốc đã được phát hành, không thể chỉnh sửa");
+            throw new ApplicationException(messageTranslator.getMessage("prescription.already_issued"));
         }
         return prescription;
     }
