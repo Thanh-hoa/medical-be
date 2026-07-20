@@ -2,9 +2,9 @@ name: CI/CD - Build, Test & Deploy
 
 on:
   push:
-    branches: [ '**' ]   
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]               
+    branches: [ main, develop ]
 
 jobs:
   build:
@@ -49,6 +49,9 @@ jobs:
           APP_KEY: ${{ secrets.APP_KEY }}
           SPRING_MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           SPRING_MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          ENCRYPTION_SECRET_KEY: ${{ secrets.ENCRYPTION_SECRET_KEY }}
+          OCR_API_URL: ${{ secrets.OCR_API_URL }}
+          APP_SERVER_URL: ${{ secrets.APP_SERVER_URL }}
 
   deploy:
     name: Deploy to EC2

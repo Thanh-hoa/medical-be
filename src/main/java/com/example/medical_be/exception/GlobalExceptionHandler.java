@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+
 import java.util.Objects;
 
 @ControllerAdvice
@@ -56,6 +58,12 @@ public class GlobalExceptionHandler {
     public Object handleAccessDeniedException(AccessDeniedException e) {
         logException(e);
         return processException(iMessageTranslator.getMessage("account.forbidden"), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public Object handleAuthenticationException(AuthenticationException e) {
+        logException(e);
+        return processException(iMessageTranslator.getMessage("login.failed"), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
