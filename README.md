@@ -1,17 +1,81 @@
 # MED-OCR Backend
 
-Backend Spring Boot cho hệ thống quản lý bệnh án và trích xuất thông tin từ ảnh hồ sơ y tế. Ứng dụng lưu dữ liệu nghiệp vụ trong PostgreSQL, gọi OCR Model Service để xử lý ảnh và lưu ảnh upload lên AWS S3.
+Backend Spring Boot cho hệ thống quản lý bệnh án điện tử có OCR. API phục vụ 4 nhóm người dùng:
+
+- **employee**: upload bệnh án, kiểm tra/chỉnh sửa dữ liệu OCR, submit để bác sĩ duyệt
+- **doctor**: xem bệnh án chờ duyệt, approve/reject, chỉnh sửa dữ liệu OCR khi cần, kê toa thuốc
+- **admin**: quản lý tài khoản/phân quyền, xem toàn bộ bệnh án, quản lý bệnh nhân, xóa bệnh án, xem audit log/dashboard, quản lý webhook
+- **patient**: tự tra cứu bệnh án và toa thuốc của chính mình
+
+Ứng dụng lưu dữ liệu nghiệp vụ trong PostgreSQL, gọi OCR Model Service để xử lý ảnh, lưu ảnh upload lên AWS S3 và gửi email (quên mật khẩu, thông báo) qua SMTP.
+
+## Chức Năng Hiện Có
+
+- Đăng ký/đăng nhập/đăng xuất, refresh token, quên/đặt lại mật khẩu qua email
+- Phân quyền theo permission dạng `resource:action` gắn vào JWT (Spring Security `@PreAuthorize`)
+- Upload ảnh/PDF bệnh án, gọi OCR Model Service để trích xuất dữ liệu
+- Quản lý bệnh án: xem danh sách/chi tiết, sửa field OCR, submit/approve/reject/resubmit, xóa mềm
+- Quản lý bệnh nhân: tạo, cập nhật, tìm kiếm theo BHYT, tra cứu hồ sơ
+- Quản lý đơn thuốc: tạo/cập nhật/phát hành/in toa thuốc theo bệnh án, danh mục thuốc
+- Quản lý tài khoản và vai trò cho admin
+- Audit log cho thao tác trên bệnh án
+- Dashboard thống kê (tổng quan, theo trạng thái, theo khoa, hiệu suất người dùng, theo thời gian)
+- Thông báo (notification) trong hệ thống
+- Quản lý webhook (admin) để nhận callback từ OCR Model Service
+- Đa ngôn ngữ cho message lỗi/response (i18n)
 
 ## Công Nghệ
 
-- Java 21, Spring Boot 3.2.5
-- Spring Security, JWT
+- Java 21, Spring Boot 3.2.5 (Web, WebFlux, Validation, Mail, Thymeleaf)
+- Spring Security, JWT (jjwt)
 - PostgreSQL 15
 - JPA/Hibernate, Flyway
+- MapStruct, Lombok
 - Springdoc OpenAPI/Swagger
+- JUnit 5, Testcontainers, Spring Security Test
 - Docker, Docker Compose
 - Nginx, Certbot/Let's Encrypt
 - AWS S3
+
+## Cấu Trúc Thư Mục
+
+```text
+src/main/java/com/example/medical_be/
+  auth/         UserDetails và UserDetailsService cho Spring Security
+  config/       Cấu hình Security, OpenAPI, Validation, Web, Async
+  controller/   REST controller theo domain
+  converter/    Convert dữ liệu request/entity
+  dto/          Request/response DTO
+  entity/       JPA entity
+  event/        Application event (vd. audit log, notification)
+  exception/    Exception và GlobalExceptionHandler
+  i18n/         Message translator đa ngôn ngữ
+  jwt/          JwtService, JwtAuthenticationFilter
+  listener/     Event listener
+  mapper/       MapStruct mapper entity <-> DTO
+  properties/   Cấu hình bind từ application.yaml
+  repository/   Spring Data JPA repository
+  routes/       Hằng số đường dẫn API (APIRoutes)
+  seeder/       Seed dữ liệu khởi tạo (role, permission, ...)
+  service/      Business logic
+  support/      Hằng số, helper dùng chung
+  swagger/      Cấu hình annotation Swagger dùng chung
+  util/         Utility function
+  validation/   Custom validator
+```
+
+## Kiến Trúc Chính
+
+### Auth
+
+- Access token (JWT) được xác thực bởi `JwtAuthenticationFilter` cho mỗi request.
+- Role và permission (`resource:action`) được nhúng vào JWT như authorities, kiểm tra bằng `@PreAuthorize("hasAuthority('...')")` ở từng endpoint.
+- Có endpoint `refresh-token` để cấp access token mới khi hết hạn, và `forgot-password`/`reset-password` gửi email qua SMTP.
+- Các file liên quan: `jwt/JwtService.java`, `jwt/JwtAuthenticationFilter.java`, `auth/AccountUserDetailsService.java`, `config/SecurityConfig.java`.
+
+### Dữ liệu khởi tạo
+
+`seeder/` chạy khi ứng dụng khởi động để seed role (`admin`, `doctor`, `employee`, `patient`) và permission mặc định, đảm bảo hệ thống có sẵn dữ liệu phân quyền.
 
 ## Kiến Trúc Production
 
@@ -53,6 +117,9 @@ SPRING_DATASOURCE_PASSWORD=your_db_password
 
 APP_KEY=your_jwt_secret
 ENCRYPTION_SECRET_KEY=your_encryption_secret
+
+SPRING_MAIL_USERNAME=your_email@gmail.com
+SPRING_MAIL_PASSWORD=your_gmail_app_password
 
 APP_SERVER_URL=https://api.medicalocr-nthoa.io.vn
 OCR_API_URL=https://model.medicalocr-nthoa.io.vn
@@ -240,23 +307,85 @@ Quyền IAM tối thiểu:
 
 ## API Chính
 
-### Auth
+Tất cả endpoint có prefix `/api/v1`. Danh sách đầy đủ và schema request/response xem ở [Swagger](#swagger).
+
+### Auth & Account
 
 | Method | Endpoint | Mô tả |
 |--------|----------|------|
-| POST | `/api/v1/auth/login` | Đăng nhập |
-| POST | `/api/v1/auth/logout` | Đăng xuất |
-| POST | `/api/v1/auth/refresh-token` | Làm mới token |
+| POST | `/auth/login` | Đăng nhập |
+| POST | `/auth/logout` | Đăng xuất |
+| POST | `/auth/refresh-token` | Làm mới token |
+| POST | `/auth/forgot-password` | Quên mật khẩu (gửi email) |
+| POST | `/auth/reset-password` | Đặt lại mật khẩu |
+| GET | `/account/profile` | Thông tin tài khoản đang đăng nhập |
+| GET | `/account/my-permissions` | Danh sách quyền của tài khoản |
+| GET | `/account/list` | Danh sách tài khoản (admin) |
+| POST | `/account/create` | Tạo tài khoản (admin) |
+| PUT | `/account/update` | Cập nhật tài khoản (admin) |
+| DELETE | `/account/delete` | Xóa tài khoản (admin) |
+
+### Patient
+
+| Method | Endpoint | Mô tả |
+|--------|----------|------|
+| GET | `/patient/search` | Tìm bệnh nhân theo BHYT |
+| GET | `/patient/me` | Hồ sơ của bệnh nhân đang đăng nhập |
+| GET | `/patient/me/records/{id}` | Chi tiết bệnh án của chính mình |
+| GET | `/patient/me/records/{id}/prescription` | Toa thuốc của chính mình |
+| GET | `/patient/list` | Danh sách bệnh nhân |
+| POST | `/patient/create` | Tạo bệnh nhân |
+| PUT | `/patient/update/{id}` | Cập nhật bệnh nhân |
 
 ### Medical Record
 
 | Method | Endpoint | Mô tả |
 |--------|----------|------|
-| POST | `/api/v1/medical-record/upload` | Upload ảnh và gọi OCR |
-| GET | `/api/v1/medical-record/list` | Danh sách bệnh án |
-| GET | `/api/v1/medical-record/{id}` | Chi tiết bệnh án |
-| PUT | `/api/v1/medical-record/update` | Cập nhật bệnh án |
-| DELETE | `/api/v1/medical-record/{id}` | Xóa mềm bệnh án |
+| POST | `/medical-record/upload` | Upload ảnh và gọi OCR |
+| GET | `/medical-record/list` | Danh sách bệnh án |
+| GET | `/medical-record/pending-review` | Danh sách bệnh án chờ duyệt |
+| GET | `/medical-record/{id}` | Chi tiết bệnh án |
+| PUT | `/medical-record/update-detail` | Cập nhật chi tiết bệnh án |
+| PUT | `/medical-record/{id}/submit` | Nộp bệnh án để duyệt |
+| PUT | `/medical-record/{id}/approve` | Duyệt bệnh án |
+| PUT | `/medical-record/{id}/reject` | Từ chối bệnh án |
+| PUT | `/medical-record/{id}/resubmit` | Nộp lại bệnh án |
+| DELETE | `/medical-record/{id}` | Xóa mềm bệnh án |
+
+### Prescription & Medicine
+
+| Method | Endpoint | Mô tả |
+|--------|----------|------|
+| POST | `/prescription/medical-record/{recordId}` | Tạo toa thuốc cho bệnh án |
+| GET | `/prescription/medical-record/{recordId}` | Lấy toa thuốc theo bệnh án |
+| PUT | `/prescription/{id}` | Cập nhật toa thuốc |
+| PUT | `/prescription/{id}/issue` | Phát hành toa thuốc |
+| GET | `/prescription/{id}/print` | Lấy dữ liệu in toa thuốc |
+| GET | `/medicine/list` | Danh sách thuốc |
+
+### Dashboard, Audit Log & Notification
+
+| Method | Endpoint | Mô tả |
+|--------|----------|------|
+| GET | `/dashboard/overview` | Số liệu tổng quan |
+| GET | `/dashboard/records-by-status` | Thống kê bệnh án theo trạng thái |
+| GET | `/dashboard/records-by-department` | Thống kê bệnh án theo khoa |
+| GET | `/dashboard/user-performance` | Hiệu suất người dùng |
+| GET | `/dashboard/timeline` | Thống kê theo thời gian |
+| GET | `/audit-logs` | Danh sách audit log |
+| GET | `/audit-logs/{id}` | Chi tiết audit log |
+| GET | `/notifications` | Danh sách thông báo |
+| GET | `/notifications/unread-count` | Số thông báo chưa đọc |
+| PUT | `/notifications/{id}/read` | Đánh dấu đã đọc |
+
+### Common & Admin
+
+| Method | Endpoint | Mô tả |
+|--------|----------|------|
+| POST | `/common/upload/media` | Upload file dùng chung |
+| GET | `/common/roles` | Danh sách vai trò |
+| GET | `/config/permission/menu` | Menu theo quyền |
+| GET/POST/PUT/DELETE | `/admin/webhooks` | Quản lý webhook (admin only) |
 
 ## Swagger
 
@@ -273,6 +402,14 @@ https://api.medicalocr-nthoa.io.vn/documents/swagger-ui/index.html
 ```
 
 Swagger có thể được bật/tắt trong `application-prod.yaml`.
+
+## Test
+
+Unit test và integration test (JUnit 5, Testcontainers) nằm trong `src/test/java`.
+
+```bash
+./mvnw clean verify
+```
 
 ## CI
 
