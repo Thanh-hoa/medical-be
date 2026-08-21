@@ -28,7 +28,7 @@ import com.example.medical_be.entity.Role;
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 class AccountRepositoryTest {
 
     @Container
